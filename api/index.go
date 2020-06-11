@@ -2,14 +2,26 @@ package api
 
 import (
 	"expvar"
+	"io/ioutil"
 )
 
 // Version is set by main and it is given to requests at /
 var Version = "v2.DEV"
+var page string
 
 func index(c *Context) {
 	c.WriteHeader("Content-Type", "text/plain; charset=utf-8")
-	c.Write([]byte("CheeseGull " + Version + " Woo\nFor more information: https://github.com/osuripple/cheesegull"))
+	if len(page) < 1 {
+		data, err := ioutil.ReadFile("page.html")
+		if err != nil {
+			page = "CheeseGull " + Version + " Woo\nFor more information: https://github.com/osuripple/cheesegull"
+			return
+		}
+
+		page = string(data)
+	}
+
+	c.Write([]byte(page))
 }
 
 var _evh = expvar.Handler()
