@@ -132,7 +132,7 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 		havingConds = " HAVING " + havingConds
 	}
 	setsQuery := "SELECT " + setFields + ", set_modes & " + sm + " AS valid_set_modes FROM sets " +
-		whereConds + havingConds + " ORDER BY id DESC " + limit
+		whereConds + havingConds + " ORDER BY last_update DESC " + limit
 	rows, err := db.Query(setsQuery)
 
 	if err != nil {

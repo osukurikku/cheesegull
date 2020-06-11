@@ -15,6 +15,14 @@ import (
 	"strings"
 )
 
+var downloadHostName string
+
+// SetHostName describes from which host i want download
+func SetHostName(host string) {
+	downloadHostName = host
+	return
+}
+
 // LogIn logs in into an osu! account and returns a Client.
 func LogIn(username, password string) (*Client, error) {
 	j, err := cookiejar.New(&cookiejar.Options{})
@@ -31,13 +39,11 @@ func LogIn(username, password string) (*Client, error) {
 	vals.Add("password", password)
 	vals.Add("autologin", "on")
 	vals.Add("login", "login")
-	loginResp, err := c.PostForm("https://old.ppy.sh/forum/ucp.php?mode=login", vals)
+	_, err = c.PostForm("https://old.ppy.sh/forum/ucp.php?mode=login", vals)
 	if err != nil {
 		return nil, err
 	}
-	if loginResp.Request.URL.Path != "/" {
-		return nil, errors.New("cheesegull/downloader: could not log in (was not redirected to index)")
-	}
+
 	return (*Client)(c), nil
 }
 
@@ -83,7 +89,9 @@ const zipMagic = "PK\x03\x04"
 func (c *Client) getReader(str string) (io.ReadCloser, error) {
 	h := (*http.Client)(c)
 
-	resp, err := h.Get("https://old.ppy.sh/d/" + str)
+	host := fmt.Sprintf("https://%s/d/%s", downloadHostName, str)
+	fmt.Println(host)
+	resp, err := h.Get(host)
 	if err != nil {
 		return nil, err
 	}

@@ -49,6 +49,11 @@ func (c *CachedBeatmap) IsDownloaded() bool {
 	return i
 }
 
+// GetLastAttempt Get Last Attempt time for re-download in some cases ;d
+func (c *CachedBeatmap) GetLastAttempt() int {
+	return int(c.lastRequested.Unix())
+}
+
 // FileSize returns the FileSize of c.
 func (c *CachedBeatmap) FileSize() uint64 {
 	c.mtx.RLock()

@@ -45,10 +45,6 @@ func Download(c *api.Context) {
 		errorMessage(c, 404, "Set not found")
 		return
 	}
-	if set.RankedStatus <= 0 {
-		errorMessage(c, 406, "Unranked beatmap sets are currently not available for download, following a warning")
-		return
-	}
 
 	// use novideo only when we are requested to get a beatmap having a video
 	// and novideo is in the request
@@ -71,12 +67,22 @@ func Download(c *api.Context) {
 		cbm.MustBeDownloaded()
 	}
 
-	cbm.SetLastRequested(time.Now())
-
 	if cbm.FileSize() == 0 {
-		errorMessage(c, 504, "The beatmap could not be downloaded (probably got deleted from the osu! website)")
-		return
+		if cbm.GetLastAttempt()+(10*60) < int(time.Now().Unix()) {
+			// try again, because some mirrors is down, but map exists ;d
+			err := downloadBeatmap(c.DLClient, cbm, c.House)
+			if err != nil {
+				c.Err(err)
+				errorMessage(c, 504, "The beatmap could not be downloaded right now")
+				return
+			}
+		} else {
+			errorMessage(c, 504, "The beatmap could not be downloaded right now")
+			return
+		}
 	}
+
+	cbm.SetLastRequested(time.Now())
 
 	f, err := cbm.File()
 	if err != nil {
