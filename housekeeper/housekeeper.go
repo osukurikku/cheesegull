@@ -14,8 +14,9 @@ import (
 // House manages the state of the cached beatmaps in the local filesystem.
 type House struct {
 	MaxSize     uint64
-	state       []*CachedBeatmap
-	stateMutex  sync.RWMutex
+	MaxSizeGB   int
+	State       []*CachedBeatmap
+	StateMutex  sync.RWMutex
 	requestChan chan struct{}
 	// set to non-nil to avoid calling os.Remove on the files to remove, and
 	// place them here instead.
@@ -64,10 +65,10 @@ func (h *House) cleanUp() {
 	}
 
 	// build new state by removing from it the beatmaps from toRemove
-	h.stateMutex.Lock()
-	newState := make([]*CachedBeatmap, 0, len(h.state))
+	h.StateMutex.Lock()
+	newState := make([]*CachedBeatmap, 0, len(h.State))
 StateLoop:
-	for _, b := range h.state {
+	for _, b := range h.State {
 		for _, r := range toRemove {
 			if r.ID == b.ID && r.NoVideo == b.NoVideo {
 				continue StateLoop
@@ -75,9 +76,9 @@ StateLoop:
 		}
 		newState = append(newState, b)
 	}
-	h.state = newState
-	err = writeBeatmaps(f, h.state)
-	h.stateMutex.Unlock()
+	h.State = newState
+	err = writeBeatmaps(f, h.State)
+	h.StateMutex.Unlock()
 
 	f.Close()
 	if err != nil {
@@ -133,8 +134,8 @@ func (h *House) mapsToRemove() []*CachedBeatmap {
 }
 
 func (h *House) badBeatmaps() (removable []*CachedBeatmap) {
-	h.stateMutex.RLock()
-	for _, b := range h.state {
+	h.StateMutex.RLock()
+	for _, b := range h.State {
 		if !b.IsDownloaded() {
 			continue
 		}
@@ -143,15 +144,15 @@ func (h *House) badBeatmaps() (removable []*CachedBeatmap) {
 			removable = append(removable, b)
 		}
 	}
-	h.stateMutex.RUnlock()
+	h.StateMutex.RUnlock()
 	return
 }
 
 // i hate verbose names myself, but it was very hard to come up with something
 // even as short as this.
 func (h *House) stateSizeAndRemovableMaps() (totalSize uint64, removable []*CachedBeatmap) {
-	h.stateMutex.RLock()
-	for _, b := range h.state {
+	h.StateMutex.RLock()
+	for _, b := range h.State {
 		if !b.IsDownloaded() {
 			continue
 		}
@@ -162,7 +163,7 @@ func (h *House) stateSizeAndRemovableMaps() (totalSize uint64, removable []*Cach
 		}
 		removable = append(removable, b)
 	}
-	h.stateMutex.RUnlock()
+	h.StateMutex.RUnlock()
 	return
 }
 
@@ -188,9 +189,9 @@ func (h *House) LoadState() error {
 	}
 	defer f.Close()
 
-	h.stateMutex.Lock()
-	h.state, err = readBeatmaps(f)
-	h.stateMutex.Unlock()
+	h.StateMutex.Lock()
+	h.State, err = readBeatmaps(f)
+	h.StateMutex.Unlock()
 
 	return err
 }
@@ -206,10 +207,10 @@ func (h *House) RemoveNonZip() {
 		return
 	}
 
-	h.stateMutex.Lock()
-	state2 := make([]*CachedBeatmap, 0, len(h.state))
-	log.Println("[F] Removing non-zip files...", len(h.state), "beatmaps to read")
-	for _, beatmap := range h.state {
+	h.StateMutex.Lock()
+	state2 := make([]*CachedBeatmap, 0, len(h.State))
+	log.Println("[F] Removing non-zip files...", len(h.State), "beatmaps to read")
+	for _, beatmap := range h.State {
 		remove, err := checkBeatmap(beatmap)
 		if err != nil {
 			log.Println("[F] Error:", err)
@@ -230,8 +231,8 @@ func (h *House) RemoveNonZip() {
 	if err != nil {
 		logError(err)
 	}
-	h.state = state2
-	h.stateMutex.Unlock()
+	h.State = state2
+	h.StateMutex.Unlock()
 	f.Close()
 	log.Println("[F] CleanUp")
 	h.cleanUp()

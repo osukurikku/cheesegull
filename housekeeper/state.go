@@ -125,15 +125,15 @@ func (h *House) AcquireBeatmap(c *CachedBeatmap) (*CachedBeatmap, bool) {
 		return nil, false
 	}
 
-	h.stateMutex.Lock()
-	for _, b := range h.state {
+	h.StateMutex.Lock()
+	for _, b := range h.State {
 		// if the id or novideo is different, then all is good and we
 		// can proceed with the next element.
 		if b.ID != c.ID || b.NoVideo != c.NoVideo {
 			continue
 		}
 		// unlocking because in either branch, we will return.
-		h.stateMutex.Unlock()
+		h.StateMutex.Unlock()
 
 		b.mtx.Lock()
 		// if c is not newer than b, then just return.
@@ -157,8 +157,8 @@ func (h *House) AcquireBeatmap(c *CachedBeatmap) (*CachedBeatmap, bool) {
 		NoVideo:    c.NoVideo,
 		LastUpdate: c.LastUpdate,
 	}
-	h.state = append(h.state, n)
-	h.stateMutex.Unlock()
+	h.State = append(h.State, n)
+	h.StateMutex.Unlock()
 
 	n.waitGroup.Add(1)
 	return n, true

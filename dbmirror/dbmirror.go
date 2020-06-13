@@ -84,6 +84,9 @@ func updateSet(c *osuapi.Client, db *sql.DB, set models.Set) error {
 		err error
 		bms []osuapi.Beatmap
 	)
+	if set.ID == 0 {
+		return nil
+	}
 	for i := 0; i < 5; i++ {
 		bms, err = c.GetBeatmaps(osuapi.GetBeatmapsOpts{
 			BeatmapSetID: set.ID,
