@@ -91,7 +91,7 @@ func CreateBeatmaps(db *sql.DB, bms ...Beatmap) error {
 		return nil
 	}
 
-	q := `INSERT INTO beatmaps(` + beatmapFields + `) VALUES `
+	q := `INSERT IGNORE INTO beatmaps(` + beatmapFields + `) VALUES `
 	const valuePlaceholder = `(
 		?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?,

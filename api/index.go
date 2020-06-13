@@ -10,7 +10,7 @@ var Version = "v2.DEV"
 var page string
 
 func index(c *Context) {
-	c.WriteHeader("Content-Type", "text/plain; charset=utf-8")
+	c.WriteHeader("Content-Type", "text/html; charset=utf-8")
 	if len(page) < 1 {
 		data, err := ioutil.ReadFile("page.html")
 		if err != nil {

@@ -64,6 +64,7 @@ func main() {
 		os.Exit(1)
 	}
 	house.MaxSize = uint64(float64(1024*1024*1024) * (*maxDisk))
+	house.MaxSizeGB = int(*maxDisk)
 	if *removeNonZip {
 		house.RemoveNonZip()
 		return
@@ -104,7 +105,7 @@ func main() {
 
 	// start running components of cheesegull
 	go dbmirror.StartSetUpdater(c, db)
-	go dbmirror.DiscoverEvery(c, db, time.Hour*6, time.Second*20)
+	go dbmirror.DiscoverEvery(c, db, time.Hour*6, time.Minute)
 
 	// create request handler
 	panic(http.ListenAndServe(*httpAddr, api.CreateHandler(db, db2, house, d)))
