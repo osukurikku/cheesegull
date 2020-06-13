@@ -89,32 +89,47 @@ const zipMagic = "PK\x03\x04"
 func (c *Client) getReader(str string) (io.ReadCloser, error) {
 	h := (*http.Client)(c)
 
-	host := fmt.Sprintf("https://%s/d/%s", downloadHostName, str)
-	fmt.Println(host)
-	resp, err := h.Get(host)
-	if err != nil {
-		return nil, err
-	}
-	if resp.Request.URL.Host == "old.ppy.sh" {
-		resp.Body.Close()
-		return nil, ErrNoRedirect
+	var globalerr error
+	hosts := []string{
+		fmt.Sprintf("https://%s/d/", downloadHostName) + "%s",
+		"https://storage.ripple.moe/d/%s",
+		"https://bloodcat.com/osu/s/%s",
 	}
 
-	// check that it is a zip file
-	first4 := make([]byte, 4)
-	_, err = resp.Body.Read(first4)
-	if err != nil {
-		return nil, err
-	}
-	if string(first4) != zipMagic {
-		return nil, errNoZip
+	for _, host := range hosts {
+		fmt.Println(host)
+		resp, err := h.Get(fmt.Sprintf(host, str))
+		if err != nil {
+			globalerr = err
+			continue // skip to next host
+		}
+		if resp.Request.URL.Host == "old.ppy.sh" {
+			resp.Body.Close()
+			globalerr = ErrNoRedirect
+			continue // skip to next host
+		}
+
+		// check that it is a zip file
+		first4 := make([]byte, 4)
+		_, err = resp.Body.Read(first4)
+		if err != nil {
+			globalerr = err
+			continue // skip to next host
+		}
+		if string(first4) != zipMagic {
+			globalerr = errNoZip
+			continue // skip to next host
+		}
+
+		return struct {
+			io.Reader
+			io.Closer
+		}{
+			io.MultiReader(strings.NewReader(zipMagic), resp.Body),
+			resp.Body,
+		}, nil
 	}
 
-	return struct {
-		io.Reader
-		io.Closer
-	}{
-		io.MultiReader(strings.NewReader(zipMagic), resp.Body),
-		resp.Body,
-	}, nil
+	// By my logic, it should be called when all is shit
+	return nil, globalerr
 }

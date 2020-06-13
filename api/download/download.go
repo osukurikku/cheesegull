@@ -38,7 +38,7 @@ func Download(c *api.Context) {
 	set, err := models.FetchSet(c.DB, id, false)
 	if err != nil {
 		c.Err(err)
-		errorMessage(c, 500, "Could not fetch set")
+		errorMessage(c, 400, "Could not fetch set")
 		return
 	}
 	if set == nil {
@@ -73,11 +73,11 @@ func Download(c *api.Context) {
 			err := downloadBeatmap(c.DLClient, cbm, c.House)
 			if err != nil {
 				c.Err(err)
-				errorMessage(c, 504, "The beatmap could not be downloaded right now")
+				errorMessage(c, 400, "The beatmap could not be downloaded right now")
 				return
 			}
 		} else {
-			errorMessage(c, 504, "The beatmap could not be downloaded right now")
+			errorMessage(c, 400, "The beatmap could not be downloaded right now")
 			return
 		}
 	}
@@ -107,11 +107,6 @@ func downloadBeatmap(c *downloader.Client, b *housekeeper.CachedBeatmap, house *
 	log.Println("[⬇️]", b.String())
 
 	var fileSize uint64
-	defer func() {
-		// We need to wrap this inside a function because this way the arguments
-		// to DownloadCompleted are actually evaluated during the defer call.
-		b.DownloadCompleted(fileSize, house)
-	}()
 
 	// Start downloading.
 	r, err := c.Download(b.ID, b.NoVideo)
@@ -121,6 +116,11 @@ func downloadBeatmap(c *downloader.Client, b *housekeeper.CachedBeatmap, house *
 		}
 		return err
 	}
+	defer func() {
+		// We need to wrap this inside a function because this way the arguments
+		// to DownloadCompleted are actually evaluated during the defer call.
+		b.DownloadCompleted(fileSize, house)
+	}()
 	defer r.Close()
 
 	// open the file we will write the beatmap into
