@@ -95,6 +95,39 @@ func FetchSet(db *sql.DB, id int, withChildren bool) (*Set, error) {
 	return &s, err
 }
 
+// FetchSetByMD5 retrieves a single set to show, alongside its children beatmaps.
+func FetchSetByMD5(db *sql.DB, md5 string, withChildren bool) (*Set, error) {
+	var s Set
+	err := db.QueryRow(`SELECT sets.id, sets.ranked_status, sets.approved_date, sets.last_update, sets.last_checked,
+	sets.artist, sets.title, sets.creator, sets.source, sets.tags, sets.has_video, sets.genre,
+	sets.language, sets.favourites
+FROM sets RIGHT JOIN beatmaps ON beatmaps.file_md5 = ? WHERE sets.id = beatmaps.parent_set_id LIMIT 1`, md5).Scan(
+		&s.ID, &s.RankedStatus, &s.ApprovedDate, &s.LastUpdate, &s.LastChecked,
+		&s.Artist, &s.Title, &s.Creator, &s.Source, &s.Tags, &s.HasVideo, &s.Genre,
+		&s.Language, &s.Favourites,
+	)
+	switch err {
+	case nil:
+		break // carry on
+	case sql.ErrNoRows:
+		// silently ignore no rows, and just don't return anything
+		return nil, nil
+	default:
+		return nil, err
+	}
+
+	if !withChildren {
+		return &s, nil
+	}
+
+	rows, err := db.Query(`SELECT `+beatmapFields+` FROM beatmaps WHERE parent_set_id = ?`, s.ID)
+	if err != nil {
+		return nil, err
+	}
+	s.ChildrenBeatmaps, err = readBeatmapsFromRows(rows, 8)
+	return &s, err
+}
+
 // DeleteSet deletes a set from the database, removing also its children
 // beatmaps.
 func DeleteSet(db *sql.DB, set int) error {

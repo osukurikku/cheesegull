@@ -85,22 +85,6 @@ func FetchBeatmaps(db *sql.DB, ids ...int) ([]Beatmap, error) {
 	return readBeatmapsFromRows(rows, len(ids))
 }
 
-// FetchBeatmapByMD5 a
-func FetchBeatmapByMD5(db *sql.DB, md5 string) ([]Beatmap, error) {
-	if len(md5) == 0 {
-		return nil, nil
-	}
-
-	q := `SELECT ` + beatmapFields + ` FROM beatmaps WHERE file_md5 = ? `
-
-	rows, err := db.Query(q, md5)
-	if err != nil {
-		return nil, err
-	}
-
-	return readBeatmapsFromRows(rows, 1)
-}
-
 // CreateBeatmaps adds beatmaps in the database.
 func CreateBeatmaps(db *sql.DB, bms ...Beatmap) error {
 	if len(bms) == 0 {

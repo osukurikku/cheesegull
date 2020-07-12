@@ -54,26 +54,26 @@ func Set(c *api.Context) {
 	c.WriteJSON(200, set)
 }
 
-// BeatmapMD5 handles requests to retrieve single beatmaps by md5.
-func BeatmapMD5(c *api.Context) {
+// SetMD5 handles requests to retrieve single beatmap set by md5.
+func SetMD5(c *api.Context) {
 	md5 := strings.TrimSuffix(c.Param("id"), ".json")
 	if len(md5) == 0 {
 		c.WriteJSON(404, nil)
 		return
 	}
 
-	bms, err := models.FetchBeatmapByMD5(c.DB, md5)
+	set, err := models.FetchSetByMD5(c.DB, md5, true)
 	if err != nil {
 		c.Err(err)
 		c.WriteJSON(500, nil)
 		return
 	}
-	if len(bms) == 0 {
+	if set == nil {
 		c.WriteJSON(404, nil)
 		return
 	}
 
-	c.WriteJSON(200, bms[0])
+	c.WriteJSON(200, set)
 }
 
 func mustInt(s string) int {
@@ -135,7 +135,7 @@ func Search(c *api.Context) {
 
 func init() {
 	api.GET("/api/b/:id", Beatmap)
-	api.GET("/api/md5/:id", BeatmapMD5)
+	api.GET("/api/md5/:id", SetMD5)
 	api.GET("/b/:id", Beatmap)
 	api.GET("/api/s/:id", Set)
 	api.GET("/s/:id", Set)
