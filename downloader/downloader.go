@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -94,12 +95,14 @@ func (c *Client) getReader(str string) (io.ReadCloser, error) {
 		fmt.Sprintf("https://%s/d/", downloadHostName) + "%s",
 		"https://storage.ripple.moe/d/%s",
 		"https://bloodcat.com/osu/s/%s",
+		"https://txy1.sayobot.cn/beatmaps/download/full/%s?server=null",
 	}
 
 	for _, host := range hosts {
-		fmt.Println(host)
+		log.Println("[I] Trying download", str, "from", host)
 		resp, err := h.Get(fmt.Sprintf(host, str))
 		if err != nil {
+			log.Println("[I] Download failed", str, "from", host)
 			globalerr = err
 			continue // skip to next host
 		}
@@ -113,14 +116,17 @@ func (c *Client) getReader(str string) (io.ReadCloser, error) {
 		first4 := make([]byte, 4)
 		_, err = resp.Body.Read(first4)
 		if err != nil {
+			log.Println("[I] Download failed (can't read 4 bytes)", str, "from", host)
 			globalerr = err
 			continue // skip to next host
 		}
 		if string(first4) != zipMagic {
+			log.Println("[I] Downloaded file doesn't contain zipMagic", str, "from", host)
 			globalerr = errNoZip
 			continue // skip to next host
 		}
 
+		log.Println("[I] Download complete", str, "from", host)
 		return struct {
 			io.Reader
 			io.Closer

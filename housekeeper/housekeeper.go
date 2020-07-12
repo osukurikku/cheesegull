@@ -109,7 +109,7 @@ func (h *House) mapsToRemove() []*CachedBeatmap {
 		return badBeatmaps
 	}
 
-	totalSize, removable := h.stateSizeAndRemovableMaps()
+	totalSize, removable := h.StateSizeAndRemovableMaps()
 
 	if totalSize <= h.MaxSize {
 		// no clean up needed, our totalSize has still not gotten over the
@@ -150,7 +150,7 @@ func (h *House) badBeatmaps() (removable []*CachedBeatmap) {
 
 // i hate verbose names myself, but it was very hard to come up with something
 // even as short as this.
-func (h *House) stateSizeAndRemovableMaps() (totalSize uint64, removable []*CachedBeatmap) {
+func (h *House) StateSizeAndRemovableMaps() (totalSize uint64, removable []*CachedBeatmap) {
 	h.StateMutex.RLock()
 	for _, b := range h.State {
 		if !b.IsDownloaded() {
