@@ -48,12 +48,13 @@ func (h *House) StartCleaner() {
 	go func() {
 		for {
 			<-h.requestChan
-			h.cleanUp()
+			h.CleanUp()
 		}
 	}()
 }
 
-func (h *House) cleanUp() {
+// CleanUp ok
+func (h *House) CleanUp() {
 	log.Println("[C] Running cleanup")
 
 	toRemove := h.mapsToRemove()
@@ -235,7 +236,7 @@ func (h *House) RemoveNonZip() {
 	h.StateMutex.Unlock()
 	f.Close()
 	log.Println("[F] CleanUp")
-	h.cleanUp()
+	h.CleanUp()
 }
 
 func checkBeatmap(b *CachedBeatmap) (bool, error) {

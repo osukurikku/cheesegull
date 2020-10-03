@@ -2,6 +2,7 @@ package dbmirror
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"time"
 
@@ -60,6 +61,46 @@ func Discover(c *osuapi.Client, db *sql.DB) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// DiscoverOneSet impressive function)
+func DiscoverOneSet(c *osuapi.Client, db *sql.DB, setID int) error {
+	log.Println("[D] Starting check ID", setID, "requested by superuser")
+	var (
+		err error
+		bms []osuapi.Beatmap
+	)
+	for i := 0; i < 5; i++ {
+		bms, err = c.GetBeatmaps(osuapi.GetBeatmapsOpts{
+			BeatmapSetID: setID,
+		})
+		if err == nil {
+			break
+		}
+		if i >= 5 {
+			return err
+		}
+	}
+	if err != nil {
+		return err
+	}
+	if len(bms) == 0 {
+		return errors.New("Set not found")
+	}
+
+	set := setFromOsuAPIBeatmap(bms[0])
+	set.ChildrenBeatmaps = createChildrenBeatmaps(bms)
+	set.HasVideo, err = hasVideo(bms[0].BeatmapSetID)
+	if err != nil {
+		return err
+	}
+
+	err = models.CreateSet(db, set)
+	if err != nil {
+		return err
 	}
 
 	return nil

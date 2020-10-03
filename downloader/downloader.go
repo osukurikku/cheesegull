@@ -94,6 +94,7 @@ func (c *Client) getReader(str string) (io.ReadCloser, error) {
 	hosts := []string{
 		fmt.Sprintf("https://%s/d/", downloadHostName) + "%s",
 		"https://storage.ripple.moe/d/%s",
+		"https://storage.debian.moe/d/%s",
 		"https://bloodcat.com/osu/s/%s",
 		"https://txy1.sayobot.cn/beatmaps/download/full/%s?server=null",
 	}

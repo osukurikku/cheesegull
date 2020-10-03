@@ -38,6 +38,7 @@ var (
 	httpAddr         = kingpin.Flag("http-addr", "Address on which to take HTTP requests.").Short('a').Default("127.0.0.1:62011").String()
 	maxDisk          = kingpin.Flag("max-disk", "Maximum number of GB used by beatmap cache.").Default("10").Envar("MAXIMUM_DISK").Float64()
 	downloadHostname = kingpin.Flag("download-host-name", "Where i should download beatmaps").Default("osu.ppy.sh").Envar("DOWNLOAD_HOSTNAME").String()
+	secretCI         = kingpin.Flag("secret-ci", "CI key for map refreshing and etc").Default("MOM_IS_YOURS").Envar("SECRET_CI").String()
 	removeNonZip     = kingpin.Flag("remove-non-zip", "Remove non-zip files.").Default("false").Bool()
 )
 
@@ -108,5 +109,5 @@ func main() {
 	go dbmirror.DiscoverEvery(c, db, time.Hour*6, time.Minute)
 
 	// create request handler
-	panic(http.ListenAndServe(*httpAddr, api.CreateHandler(db, db2, house, d)))
+	panic(http.ListenAndServe(*httpAddr, api.CreateHandler(db, db2, house, d, *c, *secretCI)))
 }

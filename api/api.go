@@ -12,6 +12,8 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/thehowl/go-osuapi"
+
 	raven "github.com/getsentry/raven-go"
 	"github.com/julienschmidt/httprouter"
 
@@ -29,6 +31,8 @@ type Context struct {
 	DLClient *downloader.Client
 	writer   http.ResponseWriter
 	params   httprouter.Params
+	OsuAPI   osuapi.Client
+	secretCI string
 }
 
 // Write writes content to the response body.
@@ -54,6 +58,19 @@ func (c *Context) Code(i int) {
 // Param retrieves a parameter in the URL's path.
 func (c *Context) Param(s string) string {
 	return c.params.ByName(s)
+}
+
+// CheckSecret checks secretCI key
+func (c *Context) CheckSecret(token string) bool {
+	if len(token) == 0 {
+		return false
+	}
+
+	if token != c.secretCI {
+		return false
+	}
+
+	return true
 }
 
 // WriteJSON writes JSON to the response.
@@ -95,7 +112,7 @@ func POST(path string, f func(c *Context)) {
 
 // CreateHandler creates a new http.Handler using the handlers registered
 // through GET and POST.
-func CreateHandler(db, searchDB *sql.DB, house *housekeeper.House, dlc *downloader.Client) http.Handler {
+func CreateHandler(db, searchDB *sql.DB, house *housekeeper.House, dlc *downloader.Client, osuApi osuapi.Client, secretCI string) http.Handler {
 	r := httprouter.New()
 	for _, h := range handlers {
 		// Create local copy that we know won't change as the loop proceeds.
@@ -110,6 +127,8 @@ func CreateHandler(db, searchDB *sql.DB, house *housekeeper.House, dlc *download
 				DLClient: dlc,
 				writer:   w,
 				params:   p,
+				OsuAPI:   osuApi,
+				secretCI: secretCI,
 			}
 			defer func() {
 				err := recover()

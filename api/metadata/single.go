@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/osuripple/cheesegull/dbmirror"
+
 	"github.com/osuripple/cheesegull/api"
 	"github.com/osuripple/cheesegull/models"
 )
@@ -76,6 +78,31 @@ func SetMD5(c *api.Context) {
 	c.WriteJSON(200, set)
 }
 
+// RefreshSet handles request for refreshing set
+func RefreshSet(c *api.Context) {
+	query := c.Request.URL.Query()
+	isTokenValid := c.CheckSecret(query.Get("token"))
+	if !isTokenValid {
+		c.WriteJSON(404, nil)
+		return
+	}
+
+	id, _ := strconv.Atoi(strings.TrimSuffix(query.Get("id"), ".json"))
+	if id == 0 {
+		c.WriteJSON(404, nil)
+		return
+	}
+
+	err := dbmirror.DiscoverOneSet(&c.OsuAPI, c.DB, id)
+	if err != nil {
+		c.Write([]byte("fuck you leatherman, map not found"))
+		return
+	}
+
+	c.Write([]byte("okay"))
+	return
+}
+
 func mustInt(s string) int {
 	i, _ := strconv.Atoi(s)
 	return i
@@ -141,4 +168,5 @@ func init() {
 	api.GET("/s/:id", Set)
 
 	api.GET("/api/search", Search)
+	api.GET("/api/update", RefreshSet)
 }

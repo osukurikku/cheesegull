@@ -88,7 +88,12 @@ func Download(c *api.Context) {
 	if err != nil {
 		c.Err(err)
 		errorMessage(c, 500, "Internal error")
+		cbm.NotDownloaded(c.House)
 		return
+	}
+	stat, err := f.Stat()
+	if err == nil && stat.Size() < 100 {
+		cbm.NotDownloaded(c.House)
 	}
 	defer f.Close()
 

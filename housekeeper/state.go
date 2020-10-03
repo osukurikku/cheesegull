@@ -81,6 +81,18 @@ func (c *CachedBeatmap) DownloadCompleted(fileSize uint64, parentHouse *House) {
 	parentHouse.scheduleCleanup()
 }
 
+// NotDownloaded must be called when file is fucking empty!
+func (c *CachedBeatmap) NotDownloaded(parentHouse *House) {
+	os.Remove(c.fileName())
+
+	c.mtx.Lock()
+	c.fileSize = 0
+	c.isDownloaded = false
+	c.mtx.Unlock()
+	c.waitGroup.Done()
+	parentHouse.scheduleCleanup()
+}
+
 // SetLastRequested changes the last requested time.
 func (c *CachedBeatmap) SetLastRequested(t time.Time) {
 	c.mtx.Lock()
