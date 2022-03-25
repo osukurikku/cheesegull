@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 
-	"github.com/osuripple/cheesegull/models"
+	"github.com/osukurikku/cheesegull/models"
 )
 
 type statusJSON struct {

@@ -1,0 +1,18 @@
+image: docker:latest
+services:
+- docker:dind
+
+stages:
+- deploy_to_docker
+
+variables:
+  RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+
+before_script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+
+build:
+  stage: deploy_to_docker
+  script:
+    - docker build --pull -t $RELEASE_IMAGE .
+    - docker push $RELEASE_IMAGE

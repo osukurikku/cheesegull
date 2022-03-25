@@ -12,15 +12,15 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	osuapi "github.com/thehowl/go-osuapi"
 
-	"github.com/osuripple/cheesegull/api"
-	"github.com/osuripple/cheesegull/dbmirror"
-	"github.com/osuripple/cheesegull/downloader"
-	"github.com/osuripple/cheesegull/housekeeper"
-	"github.com/osuripple/cheesegull/models"
+	"github.com/osukurikku/cheesegull/api"
+	"github.com/osukurikku/cheesegull/dbmirror"
+	"github.com/osukurikku/cheesegull/downloader"
+	"github.com/osukurikku/cheesegull/housekeeper"
+	"github.com/osukurikku/cheesegull/models"
 
 	// Components of the API we want to use
-	_ "github.com/osuripple/cheesegull/api/download"
-	_ "github.com/osuripple/cheesegull/api/metadata"
+	_ "github.com/osukurikku/cheesegull/api/download"
+	_ "github.com/osukurikku/cheesegull/api/metadata"
 )
 
 const searchDSNDocs = `"DSN to use for fulltext searches. ` +
@@ -39,6 +39,7 @@ var (
 	maxDisk          = kingpin.Flag("max-disk", "Maximum number of GB used by beatmap cache.").Default("10").Envar("MAXIMUM_DISK").Float64()
 	downloadHostname = kingpin.Flag("download-host-name", "Where i should download beatmaps").Default("osu.ppy.sh").Envar("DOWNLOAD_HOSTNAME").String()
 	secretCI         = kingpin.Flag("secret-ci", "CI key for map refreshing and etc").Default("MOM_IS_YOURS").Envar("SECRET_CI").String()
+	bmsOsuKey        = kingpin.Flag("bmsOsuKey", "CI key for bloodcat map archive").Default("MOM_IS_YOURS").Envar("BMS_OSU_KEY").String()
 	removeNonZip     = kingpin.Flag("remove-non-zip", "Remove non-zip files.").Default("false").Bool()
 )
 

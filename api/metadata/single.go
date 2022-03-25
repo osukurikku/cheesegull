@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/osuripple/cheesegull/dbmirror"
+	"github.com/osukurikku/cheesegull/dbmirror"
 
-	"github.com/osuripple/cheesegull/api"
-	"github.com/osuripple/cheesegull/models"
+	"github.com/osukurikku/cheesegull/api"
+	"github.com/osukurikku/cheesegull/models"
 )
 
 // Beatmap handles requests to retrieve single beatmaps.

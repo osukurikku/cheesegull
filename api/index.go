@@ -14,7 +14,7 @@ func index(c *Context) {
 	if len(page) < 1 {
 		data, err := ioutil.ReadFile("page.html")
 		if err != nil {
-			page = "CheeseGull " + Version + " Woo\nFor more information: https://github.com/osuripple/cheesegull"
+			page = "CheeseGull " + Version + " Woo\nFor more information: https://github.com/osukurikku/cheesegull"
 			return
 		}
 

@@ -17,11 +17,16 @@ import (
 )
 
 var downloadHostName string
+var bmsOsuKey string
 
 // SetHostName describes from which host i want download
 func SetHostName(host string) {
 	downloadHostName = host
-	return
+}
+
+// SetBmsOsuKey describes special_key for bms_osu.kotworks.cyou
+func SetBmsOsuKey(key string) {
+	bmsOsuKey = key
 }
 
 // LogIn logs in into an osu! account and returns a Client.
@@ -94,9 +99,10 @@ func (c *Client) getReader(str string) (io.ReadCloser, error) {
 	hosts := []string{
 		fmt.Sprintf("https://%s/d/", downloadHostName) + "%s",
 		"https://storage.ripple.moe/d/%s",
-		"https://storage.debian.moe/d/%s",
-		"https://bloodcat.com/osu/s/%s",
 		"https://txy1.sayobot.cn/beatmaps/download/full/%s?server=null",
+		"https://bm6.aeris-dev.pw/d/%s",
+		"https://chimu.moe/d/%s?n",
+		"https://bms.kotworks.cyou/%s.osz" + fmt.Sprintf("?key=%s", bmsOsuKey), // DON'T EVEN TRY TO USE THAT HOST. IT HAS RESTRICTIONS
 	}
 
 	for _, host := range hosts {
