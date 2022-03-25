@@ -21,6 +21,26 @@ type SearchOptions struct {
 	// Pagination options.
 	Offset int
 	Amount int
+
+	// Stats optiosn
+	MinAR               float32
+	MaxAR               float32
+	MinOD               float32
+	MaxOD               float32
+	MinCS               float32
+	MaxCS               float32
+	MinHP               float32
+	MaxHP               float32
+	MinDifficultyRating float64
+	MaxDifficultyRating float64
+	MinTotalLength      int
+	MaxTotalLength      int
+
+	// Beatmap additional lols
+	MinBPM   float64
+	MaxBPM   float64
+	Genre    int
+	Language int
 }
 
 func (o SearchOptions) setModes() (total uint8) {
@@ -62,14 +82,89 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 	// straight or querying sphinx first.
 	var whereConds string
 	var havingConds string
+	var beforeWhereConds = " "
 	if len(opts.Status) != 0 {
-		whereConds = "ranked_status IN (" + sIntCommaSeparated(opts.Status) + ") "
+		whereConds = beforeWhereConds + "sets.ranked_status IN (" + sIntCommaSeparated(opts.Status) + ") "
+		beforeWhereConds = " AND "
+	}
+	if opts.Genre != -1 {
+		whereConds += fmt.Sprintf(beforeWhereConds+"sets.genre = %d ", opts.Genre)
+		beforeWhereConds = " AND "
+	}
+	if opts.MinBPM != -1 {
+		whereConds += fmt.Sprintf(beforeWhereConds+"sets.bpm >= %f ", opts.MinBPM)
+		beforeWhereConds = " AND "
+	}
+	if opts.MaxBPM != -1 {
+		whereConds += fmt.Sprintf(beforeWhereConds+"sets.bpm <= %f ", opts.MaxBPM)
+		beforeWhereConds = " AND "
+	}
+	if opts.Language != -1 {
+		whereConds += fmt.Sprintf(beforeWhereConds+"sets.language = %d ", opts.Language)
+		beforeWhereConds = " AND "
 	}
 	if len(opts.Mode) != 0 {
 		// This is a hack. Apparently, Sphinx does not support AND bitwise
 		// operations in the WHERE clause, so we're placing that in the SELECT
 		// clause and only making sure it's correct in this place.
 		havingConds = " valid_set_modes = " + sm + " "
+	}
+
+	// TODO: REDONE THAT SHITCODDING!!!!! ASAP!!!!!
+	var beatmapConds string = ""
+	var condsBefore string = " "
+	if opts.MinAR != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.ar >= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+	if opts.MaxAR != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.ar <= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+	if opts.MinOD != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.od >= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+	if opts.MaxOD != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.od <= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+	if opts.MinCS != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.cs >= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+	if opts.MaxCS != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.cs <= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+	if opts.MinHP != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.hp >= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+	if opts.MaxHP != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.hp <= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+	if opts.MinDifficultyRating != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.difficulty_rating >= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+	if opts.MaxDifficultyRating != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.difficulty_rating <= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+	if opts.MinTotalLength != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.total_length >= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+	if opts.MaxTotalLength != -1 {
+		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.total_length <= %f ", opts.MinAR)
+		condsBefore = " AND "
+	}
+
+	// Limit user amount for beatmap asking
+	if opts.Amount > 100 {
+		opts.Amount = 100
 	}
 
 	sets := make([]Set, 0, opts.Amount)
@@ -81,7 +176,7 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 	limit := fmt.Sprintf(" LIMIT %d, %d ", opts.Offset, opts.Amount)
 
 	if opts.Query != "" {
-		setIDsQuery := "SELECT id, set_modes & " + sm + " AS valid_set_modes FROM cg WHERE "
+		setIDsQuery := "SELECT sets.id, sets.set_modes & " + sm + " AS valid_set_modes FROM cg WHERE "
 
 		// add filters to query
 		// Yes. I know. Prepared statements. But Sphinx doesn't like them, so
@@ -95,7 +190,7 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 		}
 
 		// set limit
-		setIDsQuery += " ORDER BY WEIGHT() DESC, id DESC " + limit + " OPTION ranker=sph04, max_matches=20000 "
+		setIDsQuery += " ORDER BY WEIGHT() DESC, sets.id DESC " + limit + " OPTION ranker=sph04, max_matches=20000 "
 		limit = ""
 
 		// fetch rows
@@ -121,7 +216,7 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 			return []Set{}, nil
 		}
 
-		whereConds = "id IN (" + sIntCommaSeparated(setIDs) + ")"
+		whereConds = "sets.id IN (" + sIntCommaSeparated(setIDs) + ")"
 		havingConds = ""
 	}
 
@@ -131,8 +226,8 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 	if havingConds != "" {
 		havingConds = " HAVING " + havingConds
 	}
-	setsQuery := "SELECT " + setFields + ", set_modes & " + sm + " AS valid_set_modes FROM sets " +
-		whereConds + havingConds + " ORDER BY last_update DESC " + limit
+	setsQuery := "SELECT " + setFields + ", sets.set_modes & " + sm + " AS valid_set_modes FROM sets INNER JOIN beatmaps ON beatmaps.ParentSetID = sets.id " +
+		whereConds + beatmapConds + havingConds + " ORDER BY last_update DESC " + limit
 	rows, err := db.Query(setsQuery)
 
 	if err != nil {

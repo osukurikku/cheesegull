@@ -160,6 +160,44 @@ func Search(c *api.Context) {
 	c.WriteJSON(200, sets)
 }
 
+// Search does a search on the sets available in the database.
+func SearchChimu(c *api.Context) {
+	query := c.Request.URL.Query()
+	sets, err := models.SearchSets(c.DB, c.SearchDB, models.SearchOptions{
+		Status: sIntWithBounds(query["status"], -2, 4),
+		Query:  query.Get("query"),
+		Mode:   sIntWithBounds(query["mode"], 0, 3),
+
+		Amount: intWithBounds(mustInt(query.Get("amount")), 1, 100, 50),
+		Offset: mustPositive(mustInt(query.Get("offset"))),
+
+		MinAR:               float32(intWithBounds(mustInt(query.Get("min_ar")), 0, 10, -1)),
+		MaxAR:               float32(intWithBounds(mustInt(query.Get("max_ar")), 0, 10, -1)),
+		MinOD:               float32(intWithBounds(mustInt(query.Get("min_od")), 0, 10, -1)),
+		MaxOD:               float32(intWithBounds(mustInt(query.Get("max_od")), 0, 10, -1)),
+		MinCS:               float32(intWithBounds(mustInt(query.Get("min_cs")), 0, 10, -1)),
+		MaxCS:               float32(intWithBounds(mustInt(query.Get("max_cs")), 0, 10, -1)),
+		MinHP:               float32(intWithBounds(mustInt(query.Get("min_hp")), 0, 10, -1)),
+		MaxHP:               float32(intWithBounds(mustInt(query.Get("max_hp")), 0, 10, -1)),
+		MinDifficultyRating: float64(intWithBounds(mustInt(query.Get("min_diff")), 0, 10, -1)),
+		MaxDifficultyRating: float64(intWithBounds(mustInt(query.Get("max_diff")), 0, 10, -1)),
+		MinTotalLength:      intWithBounds(mustInt(query.Get("min_length")), 0, 10, -1),
+		MaxTotalLength:      intWithBounds(mustInt(query.Get("max_length")), 0, 10, -1),
+
+		MinBPM:   float64(intWithBounds(mustInt(query.Get("min_bpm")), 0, 10, -1)),
+		MaxBPM:   float64(intWithBounds(mustInt(query.Get("max_bpm")), 0, 10, -1)),
+		Genre:    mustPositive(mustInt(query.Get("genre"))),
+		Language: mustPositive(mustInt(query.Get("language"))),
+	})
+	if err != nil {
+		c.Err(err)
+		c.WriteJSON(500, nil)
+		return
+	}
+
+	c.WriteJSON(200, sets)
+}
+
 func init() {
 	api.GET("/api/b/:id", Beatmap)
 	api.GET("/api/md5/:id", SetMD5)
@@ -169,4 +207,9 @@ func init() {
 
 	api.GET("/api/search", Search)
 	api.GET("/api/update", RefreshSet)
+
+	// Chimu compatibility
+	api.GET("/api/v1/map/:id", Beatmap)
+	api.GET("/api/v1/set/:id", Set)
+	api.GET("/api/v1/search", SearchChimu)
 }
