@@ -112,37 +112,37 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 		beatmapConds = fmt.Sprintf(" AND beatmaps.ar >= %f ", opts.MinAR)
 	}
 	if opts.MaxAR != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.ar <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.ar <= %f ", opts.MaxAR)
 	}
 	if opts.MinOD != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.od >= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.od >= %f ", opts.MinOD)
 	}
 	if opts.MaxOD != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.od <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.od <= %f ", opts.MaxOD)
 	}
 	if opts.MinCS != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.cs >= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.cs >= %f ", opts.MinCS)
 	}
 	if opts.MaxCS != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.cs <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.cs <= %f ", opts.MaxCS)
 	}
 	if opts.MinHP != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.hp >= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.hp >= %f ", opts.MinHP)
 	}
 	if opts.MaxHP != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.hp <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.hp <= %f ", opts.MaxHP)
 	}
 	if opts.MinDifficultyRating != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.difficulty_rating >= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.difficulty_rating >= %f ", opts.MinDifficultyRating)
 	}
 	if opts.MaxDifficultyRating != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.difficulty_rating <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.difficulty_rating <= %f ", opts.MaxDifficultyRating)
 	}
 	if opts.MinTotalLength != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.total_length >= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.total_length >= %v ", opts.MinTotalLength)
 	}
 	if opts.MaxTotalLength != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.total_length <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.total_length <= %v ", opts.MaxTotalLength)
 	}
 	if opts.MinBPM != -1 {
 		beatmapConds += fmt.Sprintf(" AND beatmaps.bpm >= %f ", opts.MinBPM)
