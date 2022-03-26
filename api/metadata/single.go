@@ -12,6 +12,12 @@ import (
 	"github.com/osukurikku/cheesegull/models"
 )
 
+type ChimuAnswer struct {
+	data    interface{} `json:data`
+	code    int         `json:code`
+	message string      `json:message`
+}
+
 // Beatmap handles requests to retrieve single beatmaps.
 func Beatmap(c *api.Context) {
 	id, _ := strconv.Atoi(strings.TrimSuffix(c.Param("id"), ".json"))
@@ -184,18 +190,25 @@ func SearchChimu(c *api.Context) {
 		MinTotalLength:      intWithBounds(mustInt(query.Get("min_length")), 0, 10, -1),
 		MaxTotalLength:      intWithBounds(mustInt(query.Get("max_length")), 0, 10, -1),
 
-		MinBPM:   float64(intWithBounds(mustInt(query.Get("min_bpm")), 0, 10, -1)),
-		MaxBPM:   float64(intWithBounds(mustInt(query.Get("max_bpm")), 0, 10, -1)),
+		MinBPM:   float64(intWithBounds(mustInt(query.Get("min_bpm")), 0, 999, -1)),
+		MaxBPM:   float64(intWithBounds(mustInt(query.Get("max_bpm")), 0, 999, -1)),
 		Genre:    mustPositive(mustInt(query.Get("genre"))),
 		Language: mustPositive(mustInt(query.Get("language"))),
 	})
 	if err != nil {
 		c.Err(err)
-		c.WriteJSON(500, nil)
+		c.WriteJSON(500, ChimuAnswer{
+			code:    500,
+			message: "Something bad happend",
+		})
 		return
 	}
 
-	c.WriteJSON(200, sets)
+	c.WriteJSON(200, ChimuAnswer{
+		data:    sets,
+		message: "",
+		code:    200,
+	})
 }
 
 func init() {
