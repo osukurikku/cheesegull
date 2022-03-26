@@ -226,7 +226,7 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 	if havingConds != "" {
 		havingConds = " HAVING " + havingConds
 	}
-	setsQuery := "SELECT " + setFields + ", sets.set_modes & " + sm + " AS valid_set_modes FROM sets INNER JOIN beatmaps ON beatmaps.ParentSetID = sets.id " +
+	setsQuery := "SELECT " + setFields + ", sets.set_modes & " + sm + " AS valid_set_modes FROM sets INNER JOIN beatmaps ON beatmaps.parent_set_id = sets.id " +
 		whereConds + beatmapConds + havingConds + " ORDER BY last_update DESC " + limit
 	rows, err := db.Query(setsQuery)
 
