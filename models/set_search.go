@@ -108,48 +108,47 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 
 	// TODO: REDONE THAT SHITCODDING!!!!! ASAP!!!!!
 	var beatmapConds string = ""
-	var condsBefore string = " "
 	if opts.MinAR != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.ar >= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.ar >= %f ", opts.MinAR)
 	}
 	if opts.MaxAR != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.ar <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.ar <= %f ", opts.MinAR)
 	}
 	if opts.MinOD != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.od >= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.od >= %f ", opts.MinAR)
 	}
 	if opts.MaxOD != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.od <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.od <= %f ", opts.MinAR)
 	}
 	if opts.MinCS != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.cs >= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.cs >= %f ", opts.MinAR)
 	}
 	if opts.MaxCS != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.cs <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.cs <= %f ", opts.MinAR)
 	}
 	if opts.MinHP != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.hp >= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.hp >= %f ", opts.MinAR)
 	}
 	if opts.MaxHP != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.hp <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.hp <= %f ", opts.MinAR)
 	}
 	if opts.MinDifficultyRating != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.difficulty_rating >= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.difficulty_rating >= %f ", opts.MinAR)
 	}
 	if opts.MaxDifficultyRating != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.difficulty_rating <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.difficulty_rating <= %f ", opts.MinAR)
 	}
 	if opts.MinTotalLength != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.total_length >= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.total_length >= %f ", opts.MinAR)
 	}
 	if opts.MaxTotalLength != -1 {
-		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.total_length <= %f ", opts.MinAR)
+		beatmapConds = fmt.Sprintf(" AND beatmaps.total_length <= %f ", opts.MinAR)
 	}
 	if opts.MinBPM != -1 {
-		beatmapConds += fmt.Sprintf(condsBefore+"beatmaps.bpm >= %f ", opts.MinBPM)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.bpm >= %f ", opts.MinBPM)
 	}
 	if opts.MaxBPM != -1 {
-		beatmapConds += fmt.Sprintf(condsBefore+"beatmaps.bpm <= %f ", opts.MaxBPM)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.bpm <= %f ", opts.MaxBPM)
 	}
 
 	// Limit user amount for beatmap asking

@@ -13,9 +13,9 @@ import (
 )
 
 type ChimuAnswer struct {
-	data    interface{} `json:data`
-	code    int         `json:code`
-	message string      `json:message`
+	Data    interface{} `json:"data"`
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
 }
 
 // Beatmap handles requests to retrieve single beatmaps.
@@ -113,6 +113,14 @@ func mustInt(s string) int {
 	i, _ := strconv.Atoi(s)
 	return i
 }
+func mustFloat32(s string) float32 {
+	i, _ := strconv.ParseFloat(s, 32)
+	return float32(i)
+}
+func mustFloat64(s string) float64 {
+	i, _ := strconv.ParseFloat(s, 64)
+	return i
+}
 
 func mustPositive(i int) int {
 	if i < 0 {
@@ -122,6 +130,32 @@ func mustPositive(i int) int {
 }
 
 func intWithBounds(i, min, max, def int) int {
+	if i == 0 {
+		return def
+	}
+	if i < min {
+		return min
+	}
+	if i > max {
+		return max
+	}
+	return i
+}
+
+func float32WithBounds(i, min, max, def float32) float32 {
+	if i == 0 {
+		return def
+	}
+	if i < min {
+		return min
+	}
+	if i > max {
+		return max
+	}
+	return i
+}
+
+func float64WithBounds(i, min, max, def float64) float64 {
 	if i == 0 {
 		return def
 	}
@@ -177,37 +211,37 @@ func SearchChimu(c *api.Context) {
 		Amount: intWithBounds(mustInt(query.Get("amount")), 1, 100, 50),
 		Offset: mustPositive(mustInt(query.Get("offset"))),
 
-		MinAR:               float32(intWithBounds(mustInt(query.Get("min_ar")), 0, 10, -1)),
-		MaxAR:               float32(intWithBounds(mustInt(query.Get("max_ar")), 0, 10, -1)),
-		MinOD:               float32(intWithBounds(mustInt(query.Get("min_od")), 0, 10, -1)),
-		MaxOD:               float32(intWithBounds(mustInt(query.Get("max_od")), 0, 10, -1)),
-		MinCS:               float32(intWithBounds(mustInt(query.Get("min_cs")), 0, 10, -1)),
-		MaxCS:               float32(intWithBounds(mustInt(query.Get("max_cs")), 0, 10, -1)),
-		MinHP:               float32(intWithBounds(mustInt(query.Get("min_hp")), 0, 10, -1)),
-		MaxHP:               float32(intWithBounds(mustInt(query.Get("max_hp")), 0, 10, -1)),
-		MinDifficultyRating: float64(intWithBounds(mustInt(query.Get("min_diff")), 0, 10, -1)),
-		MaxDifficultyRating: float64(intWithBounds(mustInt(query.Get("max_diff")), 0, 10, -1)),
+		MinAR:               float32WithBounds(mustFloat32(query.Get("min_ar")), 0, 10, -1),
+		MaxAR:               float32WithBounds(mustFloat32(query.Get("max_ar")), 0, 10, -1),
+		MinOD:               float32WithBounds(mustFloat32(query.Get("min_od")), 0, 10, -1),
+		MaxOD:               float32WithBounds(mustFloat32(query.Get("max_od")), 0, 10, -1),
+		MinCS:               float32WithBounds(mustFloat32(query.Get("min_cs")), 0, 10, -1),
+		MaxCS:               float32WithBounds(mustFloat32(query.Get("max_cs")), 0, 10, -1),
+		MinHP:               float32WithBounds(mustFloat32(query.Get("min_hp")), 0, 10, -1),
+		MaxHP:               float32WithBounds(mustFloat32(query.Get("max_hp")), 0, 10, -1),
+		MinDifficultyRating: float64WithBounds(mustFloat64(query.Get("min_diff")), 0, 10, -1),
+		MaxDifficultyRating: float64WithBounds(mustFloat64(query.Get("max_diff")), 0, 10, -1),
 		MinTotalLength:      intWithBounds(mustInt(query.Get("min_length")), 0, 10, -1),
 		MaxTotalLength:      intWithBounds(mustInt(query.Get("max_length")), 0, 10, -1),
 
-		MinBPM:   float64(intWithBounds(mustInt(query.Get("min_bpm")), 0, 999, -1)),
-		MaxBPM:   float64(intWithBounds(mustInt(query.Get("max_bpm")), 0, 999, -1)),
+		MinBPM:   float64WithBounds(mustFloat64(query.Get("min_bpm")), 0, 999, -1),
+		MaxBPM:   float64WithBounds(mustFloat64(query.Get("max_bpm")), 0, 999, -1),
 		Genre:    mustPositive(mustInt(query.Get("genre"))),
 		Language: mustPositive(mustInt(query.Get("language"))),
 	})
 	if err != nil {
 		c.Err(err)
 		c.WriteJSON(500, ChimuAnswer{
-			code:    500,
-			message: "Something bad happend",
+			Code:    500,
+			Message: "Something bad happend",
 		})
 		return
 	}
 
 	c.WriteJSON(200, ChimuAnswer{
-		data:    sets,
-		message: "",
-		code:    200,
+		Data:    sets,
+		Message: "",
+		Code:    200,
 	})
 }
 
