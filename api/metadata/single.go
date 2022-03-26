@@ -40,6 +40,28 @@ func Beatmap(c *api.Context) {
 	c.WriteJSON(200, bms[0])
 }
 
+// BeatmapChimu handles requests to retrieve single beatmaps.
+func BeatmapChimu(c *api.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	if id == 0 {
+		c.WriteJSON(404, nil)
+		return
+	}
+
+	bms, err := models.FetchBeatmaps(c.DB, id)
+	if err != nil {
+		c.Err(err)
+		c.WriteJSON(500, nil)
+		return
+	}
+	if len(bms) == 0 {
+		c.WriteJSON(404, nil)
+		return
+	}
+
+	c.WriteJSON(200, bms[0])
+}
+
 // Set handles requests to retrieve single beatmap sets.
 func Set(c *api.Context) {
 	id, _ := strconv.Atoi(strings.TrimSuffix(c.Param("id"), ".json"))
@@ -49,6 +71,28 @@ func Set(c *api.Context) {
 	}
 
 	set, err := models.FetchSet(c.DB, id, true)
+	if err != nil {
+		c.Err(err)
+		c.WriteJSON(500, nil)
+		return
+	}
+	if set == nil {
+		c.WriteJSON(404, nil)
+		return
+	}
+
+	c.WriteJSON(200, set)
+}
+
+// SetChimu handles requests to retrieve single beatmap sets.
+func SetChimu(c *api.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	if id == 0 {
+		c.WriteJSON(404, nil)
+		return
+	}
+
+	set, err := models.FetchSetChimu(c.DB, id, true)
 	if err != nil {
 		c.Err(err)
 		c.WriteJSON(500, nil)
@@ -203,7 +247,7 @@ func Search(c *api.Context) {
 // Search does a search on the sets available in the database.
 func SearchChimu(c *api.Context) {
 	query := c.Request.URL.Query()
-	sets, err := models.SearchSets(c.DB, c.SearchDB, models.SearchOptions{
+	sets, err := models.SearchSetsChimu(c.DB, c.SearchDB, models.SearchOptions{
 		Status: sIntWithBounds(query["status"], -2, 4),
 		Query:  query.Get("query"),
 		Mode:   sIntWithBounds(query["mode"], 0, 3),
@@ -256,7 +300,7 @@ func init() {
 	api.GET("/api/update", RefreshSet)
 
 	// Chimu compatibility
-	api.GET("/api/v1/map/:id", Beatmap)
-	api.GET("/api/v1/set/:id", Set)
+	api.GET("/api/v1/map/:id", BeatmapChimu)
+	api.GET("/api/v1/set/:id", SetChimu)
 	api.GET("/api/v1/search", SearchChimu)
 }
