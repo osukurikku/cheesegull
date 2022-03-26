@@ -24,6 +24,26 @@ type Set struct {
 	Favourites       int
 }
 
+// SetChimu represents a set of beatmaps usually sharing the same song.
+type SetChimu struct {
+	ID               int `json:"SetId"`
+	ChildrenBeatmaps []BeatmapChimu
+	RankedStatus     int
+	ApprovedDate     time.Time
+	LastUpdate       time.Time
+	LastChecked      time.Time
+	Artist           string
+	Title            string
+	Creator          string
+	Source           string
+	Tags             string
+	HasVideo         bool
+	Genre            int
+	Language         int
+	Favourites       int
+	Disabled         int
+}
+
 const setFields = `id, ranked_status, approved_date, last_update, last_checked,
 artist, title, creator, source, tags, has_video, genre,
 language, favourites`
@@ -92,6 +112,36 @@ func FetchSet(db *sql.DB, id int, withChildren bool) (*Set, error) {
 		return nil, err
 	}
 	s.ChildrenBeatmaps, err = readBeatmapsFromRows(rows, 8)
+	return &s, err
+}
+
+// FetchSet retrieves a single set to show, alongside its children beatmaps.
+func FetchSetChimu(db *sql.DB, id int, withChildren bool) (*SetChimu, error) {
+	var s SetChimu
+	err := db.QueryRow(`SELECT `+setFields+` FROM sets WHERE id = ? LIMIT 1`, id).Scan(
+		&s.ID, &s.RankedStatus, &s.ApprovedDate, &s.LastUpdate, &s.LastChecked,
+		&s.Artist, &s.Title, &s.Creator, &s.Source, &s.Tags, &s.HasVideo, &s.Genre,
+		&s.Language, &s.Favourites,
+	)
+	switch err {
+	case nil:
+		break // carry on
+	case sql.ErrNoRows:
+		// silently ignore no rows, and just don't return anything
+		return nil, nil
+	default:
+		return nil, err
+	}
+
+	if !withChildren {
+		return &s, nil
+	}
+
+	rows, err := db.Query(`SELECT `+beatmapFields+` FROM beatmaps WHERE parent_set_id = ?`, s.ID)
+	if err != nil {
+		return nil, err
+	}
+	s.ChildrenBeatmaps, err = readBeatmapsFromRowsChimu(rows, 8)
 	return &s, err
 }
 

@@ -145,4 +145,7 @@ func downloadBeatmap(c *downloader.Client, b *housekeeper.CachedBeatmap, house *
 
 func init() {
 	api.GET("/d/:id", Download)
+
+	// Chimu compatibility
+	api.GET("/api/v1/download/:id", Download)
 }

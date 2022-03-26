@@ -1,6 +1,9 @@
 package models
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+)
 
 // Beatmap represents a single beatmap (difficulty) on osu!.
 type Beatmap struct {
@@ -20,6 +23,27 @@ type Beatmap struct {
 	Passcount        int
 	MaxCombo         int
 	DifficultyRating float64
+}
+
+type BeatmapChimu struct {
+	ID               int `json:"BeatmapId"`
+	ParentSetId      int
+	DiffName         string
+	FileMD5          string
+	Mode             int
+	BPM              float64
+	AR               float32
+	OD               float32
+	CS               float32
+	HP               float32
+	TotalLength      int
+	HitLength        int
+	Playcount        int
+	Passcount        int
+	MaxCombo         int
+	DifficultyRating float64
+	OsuFile          string
+	DownloadPath     string
 }
 
 const beatmapFields = `
@@ -44,6 +68,28 @@ func readBeatmapsFromRows(rows *sql.Rows, capacity int) ([]Beatmap, error) {
 	}
 
 	return bms, rows.Err()
+}
+
+func readBeatmapsFromRowsChimu(rows *sql.Rows, capacity int) ([]BeatmapChimu, error) {
+	var err error
+	bms_chimu := make([]BeatmapChimu, 0, capacity)
+	for rows.Next() {
+		var bcm BeatmapChimu
+		err = rows.Scan(
+			&bcm.ID, &bcm.ParentSetId, &bcm.DiffName, &bcm.FileMD5, &bcm.Mode, &bcm.BPM,
+			&bcm.AR, &bcm.OD, &bcm.CS, &bcm.HP, &bcm.TotalLength, &bcm.HitLength,
+			&bcm.Playcount, &bcm.Passcount, &bcm.MaxCombo, &bcm.DifficultyRating,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		bcm.OsuFile = fmt.Sprintf("%d.osu", &bcm.ID)
+		bcm.DownloadPath = fmt.Sprintf("/d/%d", &bcm.ParentSetId)
+		bms_chimu = append(bms_chimu, bcm)
+	}
+	return bms_chimu, rows.Err()
 }
 
 func inClause(length int) string {
@@ -83,6 +129,22 @@ func FetchBeatmaps(db *sql.DB, ids ...int) ([]Beatmap, error) {
 	}
 
 	return readBeatmapsFromRows(rows, len(ids))
+}
+
+// FetchBeatmaps retrieves a list of beatmap knowing their IDs.
+func FetchBeatmapsChimu(db *sql.DB, ids ...int) ([]BeatmapChimu, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	q := `SELECT ` + beatmapFields + ` FROM beatmaps WHERE id IN (` + inClause(len(ids)) + `)`
+
+	rows, err := db.Query(q, sIntToSInterface(ids)...)
+	if err != nil {
+		return nil, err
+	}
+
+	return readBeatmapsFromRowsChimu(rows, len(ids))
 }
 
 // CreateBeatmaps adds beatmaps in the database.
