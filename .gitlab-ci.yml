@@ -6,7 +6,7 @@ stages:
 - deploy_to_docker
 
 variables:
-  RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+  RELEASE_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH
 
 before_script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
