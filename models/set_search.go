@@ -91,14 +91,6 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 		whereConds += fmt.Sprintf(beforeWhereConds+"sets.genre = %d ", opts.Genre)
 		beforeWhereConds = " AND "
 	}
-	if opts.MinBPM != -1 {
-		whereConds += fmt.Sprintf(beforeWhereConds+"sets.bpm >= %f ", opts.MinBPM)
-		beforeWhereConds = " AND "
-	}
-	if opts.MaxBPM != -1 {
-		whereConds += fmt.Sprintf(beforeWhereConds+"sets.bpm <= %f ", opts.MaxBPM)
-		beforeWhereConds = " AND "
-	}
 	if opts.Language != -1 {
 		whereConds += fmt.Sprintf(beforeWhereConds+"sets.language = %d ", opts.Language)
 		beforeWhereConds = " AND "
@@ -160,6 +152,14 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 	if opts.MaxTotalLength != -1 {
 		beatmapConds = fmt.Sprintf(condsBefore+"beatmaps.total_length <= %f ", opts.MinAR)
 		condsBefore = " AND "
+	}
+	if opts.MinBPM != -1 {
+		whereConds += fmt.Sprintf(beforeWhereConds+"beatmaps.bpm >= %f ", opts.MinBPM)
+		beforeWhereConds = " AND "
+	}
+	if opts.MaxBPM != -1 {
+		whereConds += fmt.Sprintf(beforeWhereConds+"beatmaps.bpm <= %f ", opts.MaxBPM)
+		beforeWhereConds = " AND "
 	}
 
 	// Limit user amount for beatmap asking
