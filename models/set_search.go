@@ -256,40 +256,40 @@ func SearchSetsChimu(db, searchDB *sql.DB, opts SearchOptions) ([]SetChimu, erro
 	// TODO: REDONE THAT SHITCODDING!!!!! ASAP!!!!!
 	var beatmapConds string = ""
 	if opts.MinAR != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.ar >= %f ", opts.MinAR)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.ar >= %f ", opts.MinAR)
 	}
 	if opts.MaxAR != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.ar <= %f ", opts.MaxAR)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.ar <= %f ", opts.MaxAR)
 	}
 	if opts.MinOD != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.od >= %f ", opts.MinOD)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.od >= %f ", opts.MinOD)
 	}
 	if opts.MaxOD != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.od <= %f ", opts.MaxOD)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.od <= %f ", opts.MaxOD)
 	}
 	if opts.MinCS != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.cs >= %f ", opts.MinCS)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.cs >= %f ", opts.MinCS)
 	}
 	if opts.MaxCS != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.cs <= %f ", opts.MaxCS)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.cs <= %f ", opts.MaxCS)
 	}
 	if opts.MinHP != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.hp >= %f ", opts.MinHP)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.hp >= %f ", opts.MinHP)
 	}
 	if opts.MaxHP != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.hp <= %f ", opts.MaxHP)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.hp <= %f ", opts.MaxHP)
 	}
 	if opts.MinDifficultyRating != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.difficulty_rating >= %f ", opts.MinDifficultyRating)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.difficulty_rating >= %f ", opts.MinDifficultyRating)
 	}
 	if opts.MaxDifficultyRating != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.difficulty_rating <= %f ", opts.MaxDifficultyRating)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.difficulty_rating <= %f ", opts.MaxDifficultyRating)
 	}
 	if opts.MinTotalLength != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.total_length >= %v ", opts.MinTotalLength)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.total_length >= %v ", opts.MinTotalLength)
 	}
 	if opts.MaxTotalLength != -1 {
-		beatmapConds = fmt.Sprintf(" AND beatmaps.total_length <= %v ", opts.MaxTotalLength)
+		beatmapConds += fmt.Sprintf(" AND beatmaps.total_length <= %v ", opts.MaxTotalLength)
 	}
 	if opts.MinBPM != -1 {
 		beatmapConds += fmt.Sprintf(" AND beatmaps.bpm >= %f ", opts.MinBPM)
@@ -360,11 +360,14 @@ func SearchSetsChimu(db, searchDB *sql.DB, opts SearchOptions) ([]SetChimu, erro
 	if whereConds != "" {
 		whereConds = "WHERE " + whereConds
 	}
+	if beatmapConds != "" && whereConds == "" {
+		beatmapConds = "WHERE " + strings.Replace(beatmapConds, " AND ", " ", 1)
+	}
 	if havingConds != "" {
 		havingConds = " HAVING " + havingConds
 	}
-	setsQuery := "SELECT " + setFieldsWithRow + ", sets.set_modes & " + sm + " AS valid_set_modes FROM sets INNER JOIN beatmaps ON beatmaps.parent_set_id = sets.id GROUP BY beatmaps.parent_set_id " +
-		whereConds + beatmapConds + havingConds + " ORDER BY last_update DESC " + limit
+	setsQuery := "SELECT " + setFieldsWithRow + ", sets.set_modes & " + sm + " AS valid_set_modes FROM sets INNER JOIN beatmaps ON beatmaps.parent_set_id = sets.id " +
+		whereConds + beatmapConds + " GROUP BY beatmaps.parent_set_id " + havingConds + " ORDER BY last_update DESC " + limit
 	rows, err := db.Query(setsQuery)
 
 	if err != nil {
