@@ -24,9 +24,9 @@ type Set struct {
 	Favourites       int
 }
 
-const setFields = `sets.id, sets.ranked_status, sets.approved_date, sets.last_update, sets.last_checked,
-sets.artist, sets.title, sets.creator, sets.source, sets.tags, sets.has_video, sets.genre,
-language, sets.favourites`
+const setFields = `id, ranked_status, approved_date, last_update, last_checked,
+artist, title, creator, source, tags, has_video, genre,
+language, favourites`
 
 // FetchSetsForBatchUpdate fetches limit sets from the database, sorted by
 // LastChecked (asc, older first). Results are further filtered: if the set's

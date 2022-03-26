@@ -74,6 +74,10 @@ func sIntCommaSeparated(nums []int) string {
 	return b.String()
 }
 
+const setFieldsWithRow = `sets.id, sets.ranked_status, sets.approved_date, sets.last_update, sets.last_checked,
+sets.artist, sets.title, sets.creator, sets.source, sets.tags, sets.has_video, sets.genre,
+language, sets.favourites`
+
 // SearchSets retrieves sets, filtering them using SearchOptions.
 func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 	sm := strconv.Itoa(int(opts.setModes()))
@@ -154,12 +158,12 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 		condsBefore = " AND "
 	}
 	if opts.MinBPM != -1 {
-		whereConds += fmt.Sprintf(beforeWhereConds+"beatmaps.bpm >= %f ", opts.MinBPM)
-		beforeWhereConds = " AND "
+		beatmapConds += fmt.Sprintf(condsBefore+"beatmaps.bpm >= %f ", opts.MinBPM)
+		condsBefore = " AND "
 	}
 	if opts.MaxBPM != -1 {
-		whereConds += fmt.Sprintf(beforeWhereConds+"beatmaps.bpm <= %f ", opts.MaxBPM)
-		beforeWhereConds = " AND "
+		beatmapConds += fmt.Sprintf(condsBefore+"beatmaps.bpm <= %f ", opts.MaxBPM)
+		condsBefore = " AND "
 	}
 
 	// Limit user amount for beatmap asking
@@ -176,7 +180,7 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 	limit := fmt.Sprintf(" LIMIT %d, %d ", opts.Offset, opts.Amount)
 
 	if opts.Query != "" {
-		setIDsQuery := "SELECT sets.id, sets.set_modes & " + sm + " AS valid_set_modes FROM cg WHERE "
+		setIDsQuery := "SELECT id, set_modes & " + sm + " AS valid_set_modes FROM cg WHERE "
 
 		// add filters to query
 		// Yes. I know. Prepared statements. But Sphinx doesn't like them, so
@@ -188,9 +192,10 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 		if havingConds != "" {
 			setIDsQuery += " AND " + havingConds
 		}
+		setIDsQuery = strings.ReplaceAll(setIDsQuery, "sets.", "")
 
 		// set limit
-		setIDsQuery += " ORDER BY WEIGHT() DESC, sets.id DESC " + limit + " OPTION ranker=sph04, max_matches=20000 "
+		setIDsQuery += " ORDER BY WEIGHT() DESC, id DESC " + limit + " OPTION ranker=sph04, max_matches=20000 "
 		limit = ""
 
 		// fetch rows
@@ -226,7 +231,7 @@ func SearchSets(db, searchDB *sql.DB, opts SearchOptions) ([]Set, error) {
 	if havingConds != "" {
 		havingConds = " HAVING " + havingConds
 	}
-	setsQuery := "SELECT " + setFields + ", sets.set_modes & " + sm + " AS valid_set_modes FROM sets INNER JOIN beatmaps ON beatmaps.parent_set_id = sets.id " +
+	setsQuery := "SELECT " + setFieldsWithRow + ", sets.set_modes & " + sm + " AS valid_set_modes FROM sets INNER JOIN beatmaps ON beatmaps.parent_set_id = sets.id " +
 		whereConds + beatmapConds + havingConds + " ORDER BY last_update DESC " + limit
 	rows, err := db.Query(setsQuery)
 
