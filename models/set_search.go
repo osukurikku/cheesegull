@@ -420,8 +420,9 @@ func SearchSetsChimu(db, searchDB *sql.DB, opts SearchOptions) ([]SetChimu, erro
 		if err != nil {
 			return nil, err
 		}
-		b.OsuFile = fmt.Sprintf("%d.osu", &b.ID)
-		b.DownloadPath = fmt.Sprintf("/d/%d", &b.ParentSetId)
+
+		b.OsuFile = fmt.Sprintf("%d.osu", b.ID)
+		b.DownloadPath = fmt.Sprintf("/d/%d", b.ParentSetId)
 		parentSet, ok := setMap[b.ParentSetId]
 		if !ok {
 			continue

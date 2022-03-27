@@ -85,8 +85,8 @@ func readBeatmapsFromRowsChimu(rows *sql.Rows, capacity int) ([]BeatmapChimu, er
 			return nil, err
 		}
 
-		bcm.OsuFile = fmt.Sprintf("%d.osu", &bcm.ID)
-		bcm.DownloadPath = fmt.Sprintf("/d/%d", &bcm.ParentSetId)
+		bcm.OsuFile = fmt.Sprintf("%d.osu", bcm.ID)
+		bcm.DownloadPath = fmt.Sprintf("/d/%d", bcm.ParentSetId)
 		bms_chimu = append(bms_chimu, bcm)
 	}
 	return bms_chimu, rows.Err()
