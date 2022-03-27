@@ -41,6 +41,7 @@ var (
 	secretCI         = kingpin.Flag("secret-ci", "CI key for map refreshing and etc").Default("MOM_IS_YOURS").Envar("SECRET_CI").String()
 	bmsOsuKey        = kingpin.Flag("bmsOsuKey", "CI key for bloodcat map archive").Default("MOM_IS_YOURS").Envar("BMS_OSU_KEY").String()
 	removeNonZip     = kingpin.Flag("remove-non-zip", "Remove non-zip files.").Default("false").Bool()
+	dataFolders      = kingpin.Flag("folders", "Paths to folders through ,").Default("/data/").String()
 )
 
 func addTimeParsing(dsn string) string {
@@ -60,6 +61,7 @@ func main() {
 
 	// set up housekeeper
 	house := housekeeper.New()
+	house.UpdateFolders(*dataFolders)
 	err := house.LoadState()
 	if err != nil {
 		fmt.Println(err)
@@ -78,6 +80,7 @@ func main() {
 
 	// set up downloader
 	downloader.SetHostName(*downloadHostname)
+	downloader.SetBmsOsuKey(*bmsOsuKey)
 	d, err := downloader.LogIn(*osuUsername, *osuPassword)
 	if err != nil {
 		fmt.Println("Can't log in into osu!:", err)

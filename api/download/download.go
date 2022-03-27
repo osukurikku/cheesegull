@@ -51,9 +51,10 @@ func Download(c *api.Context) {
 	noVideo := set.HasVideo && existsQueryKey(c, "novideo")
 
 	cbm, shouldDownload := c.House.AcquireBeatmap(&housekeeper.CachedBeatmap{
-		ID:         id,
-		NoVideo:    noVideo,
-		LastUpdate: set.LastUpdate,
+		ID:          id,
+		NoVideo:     noVideo,
+		LastUpdate:  set.LastUpdate,
+		DataFolders: c.House.DataFolders,
 	})
 
 	if shouldDownload {
@@ -88,7 +89,6 @@ func Download(c *api.Context) {
 	if err != nil {
 		c.Err(err)
 		errorMessage(c, 500, "Internal error")
-		cbm.NotDownloaded(c.House)
 		return
 	}
 	stat, err := f.Stat()
@@ -112,6 +112,15 @@ func downloadBeatmap(c *downloader.Client, b *housekeeper.CachedBeatmap, house *
 	log.Println("[⬇️]", b.String())
 
 	var fileSize uint64
+
+	// so problem is that for some maps, we can put them in cache forcely (like map updating or smth)
+	fCbm, errF := b.File()
+	if errF == nil {
+		// FILE EXISTS!
+		log.Println("[⬇️][👌] Map found in cache, no need to download!", b.String())
+		defer fCbm.Close()
+		return nil
+	}
 
 	// Start downloading.
 	r, err := c.Download(b.ID, b.NoVideo)

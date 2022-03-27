@@ -10,22 +10,26 @@ import (
 var testBeatmaps = []*CachedBeatmap{
 	&CachedBeatmap{
 		isDownloaded: true,
+		DataFolders:  []string{"/data/"},
 	},
 	&CachedBeatmap{
 		ID:           851,
 		NoVideo:      true,
 		isDownloaded: true,
+		DataFolders:  []string{"/data/"},
 	},
 	&CachedBeatmap{
 		ID:           1337777,
 		fileSize:     58111,
 		isDownloaded: true,
+		DataFolders:  []string{"/data/"},
 	},
 	&CachedBeatmap{
 		ID:            851,
 		LastUpdate:    time.Date(2017, 9, 21, 11, 11, 50, 0, time.UTC),
 		lastRequested: time.Date(2017, 9, 21, 22, 11, 50, 0, time.UTC),
 		isDownloaded:  true,
+		DataFolders:   []string{"/data/"},
 	},
 }
 

@@ -1,18 +1,21 @@
 package housekeeper
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
 
 // CachedBeatmap represents a beatmap that is held in the cache of CheeseGull.
 type CachedBeatmap struct {
-	ID         int
-	NoVideo    bool
-	LastUpdate time.Time
+	ID          int
+	NoVideo     bool
+	LastUpdate  time.Time
+	DataFolders []string
 
 	lastRequested time.Time
 
@@ -22,15 +25,36 @@ type CachedBeatmap struct {
 	waitGroup    sync.WaitGroup
 }
 
+func (c *CachedBeatmap) UpdateFolders(folders string) bool {
+	var splittedPaths = strings.Split(folders, ",")
+	c.DataFolders = splittedPaths
+	return true
+}
+
 // File opens the File of the beatmap from the filesystem.
 func (c *CachedBeatmap) File() (*os.File, error) {
-	return os.Open(c.fileName())
+	if len(c.DataFolders) < 1 {
+		return nil, os.ErrNotExist
+	}
+
+	for _, path := range c.DataFolders {
+		if _, err := os.Stat(path + c.fileName()); errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		// file exists...
+		return os.Open(path + c.fileName())
+	}
+	return os.Open(c.DataFolders[len(c.DataFolders)-1] + c.fileName())
 }
 
 // CreateFile creates the File of the beatmap in the filesystem, and returns it
 // in write mode.
 func (c *CachedBeatmap) CreateFile() (*os.File, error) {
-	return os.Create(c.fileName())
+	if len(c.DataFolders) < 1 {
+		return nil, os.ErrInvalid
+	}
+
+	return os.Create(c.DataFolders[len(c.DataFolders)-1] + c.fileName())
 }
 
 func (c *CachedBeatmap) fileName() string {
@@ -38,7 +62,7 @@ func (c *CachedBeatmap) fileName() string {
 	if c.NoVideo {
 		n = "n"
 	}
-	return "data/" + strconv.Itoa(c.ID) + n + ".osz"
+	return strconv.Itoa(c.ID) + n + ".osz"
 }
 
 // IsDownloaded checks whether the beatmap has been downloaded.
@@ -83,7 +107,18 @@ func (c *CachedBeatmap) DownloadCompleted(fileSize uint64, parentHouse *House) {
 
 // NotDownloaded must be called when file is fucking empty!
 func (c *CachedBeatmap) NotDownloaded(parentHouse *House) {
-	os.Remove(c.fileName())
+	for _, path := range c.DataFolders {
+		if _, err := os.Stat(path + c.fileName()); errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		// file exists...
+		var f, err = os.Open(path + c.fileName())
+		stat, err := f.Stat()
+		if err == nil && stat.Size() < 100 {
+			os.Remove(path + c.fileName())
+		}
+		defer f.Close()
+	}
 
 	c.mtx.Lock()
 	c.fileSize = 0
@@ -165,9 +200,10 @@ func (h *House) AcquireBeatmap(c *CachedBeatmap) (*CachedBeatmap, bool) {
 	// we need to recreate the CachedBeatmap: this way we can be sure the zero
 	// is set for the unexported fields.
 	n := &CachedBeatmap{
-		ID:         c.ID,
-		NoVideo:    c.NoVideo,
-		LastUpdate: c.LastUpdate,
+		ID:          c.ID,
+		NoVideo:     c.NoVideo,
+		LastUpdate:  c.LastUpdate,
+		DataFolders: h.DataFolders,
 	}
 	h.State = append(h.State, n)
 	h.StateMutex.Unlock()

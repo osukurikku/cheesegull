@@ -13,6 +13,7 @@ func TestCleanupOneMap(t *testing.T) {
 			lastRequested: time.Date(2017, 4, 5, 15, 5, 3, 0, time.UTC),
 			fileSize:      15,
 			isDownloaded:  true,
+			DataFolders:   []string{"/data/"},
 		},
 	}
 	expectRemain := []*CachedBeatmap{
@@ -21,18 +22,21 @@ func TestCleanupOneMap(t *testing.T) {
 			lastRequested: time.Date(2017, 4, 10, 15, 5, 3, 0, time.UTC),
 			fileSize:      15,
 			isDownloaded:  true,
+			DataFolders:   []string{"/data/"},
 		},
 		&CachedBeatmap{
 			ID:            3,
 			lastRequested: time.Date(2017, 4, 15, 15, 5, 3, 0, time.UTC),
 			fileSize:      15,
 			isDownloaded:  true,
+			DataFolders:   []string{"/data/"},
 		},
 		&CachedBeatmap{
 			ID:            4,
 			lastRequested: time.Date(2017, 4, 20, 15, 5, 3, 0, time.UTC),
 			fileSize:      15,
 			isDownloaded:  true,
+			DataFolders:   []string{"/data/"},
 		},
 	}
 
@@ -61,6 +65,7 @@ func TestCleanupNoMaps(t *testing.T) {
 			lastRequested: time.Date(2017, 4, 10, 15, 5, 3, 0, time.UTC),
 			fileSize:      10,
 			isDownloaded:  true,
+			DataFolders:   []string{"/data/"},
 		},
 	}
 
@@ -88,6 +93,7 @@ func TestCleanupEmptyBeatmaps(t *testing.T) {
 			lastRequested: time.Date(2017, 4, 10, 15, 5, 3, 0, time.UTC),
 			fileSize:      10,
 			isDownloaded:  true,
+			DataFolders:   []string{"/data/"},
 		},
 	}
 	expectRemain := []*CachedBeatmap{
@@ -96,18 +102,21 @@ func TestCleanupEmptyBeatmaps(t *testing.T) {
 			lastRequested: time.Date(2017, 4, 5, 15, 5, 3, 0, time.UTC),
 			fileSize:      0,
 			isDownloaded:  true,
+			DataFolders:   []string{"/data/"},
 		},
 		&CachedBeatmap{
 			ID:            3,
 			lastRequested: time.Date(2017, 4, 4, 15, 5, 3, 0, time.UTC),
 			fileSize:      0,
 			isDownloaded:  true,
+			DataFolders:   []string{"/data/"},
 		},
 		&CachedBeatmap{
 			ID:            4,
 			lastRequested: time.Date(2017, 4, 3, 15, 5, 3, 0, time.UTC),
 			fileSize:      0,
 			isDownloaded:  true,
+			DataFolders:   []string{"/data/"},
 		},
 	}
 

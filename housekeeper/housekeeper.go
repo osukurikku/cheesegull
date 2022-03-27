@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 
 	raven "github.com/getsentry/raven-go"
@@ -15,6 +16,7 @@ import (
 type House struct {
 	MaxSize     uint64
 	MaxSizeGB   int
+	DataFolders []string
 	State       []*CachedBeatmap
 	StateMutex  sync.RWMutex
 	requestChan chan struct{}
@@ -29,6 +31,12 @@ func New() *House {
 		MaxSize:     1024 * 1024 * 1024 * 10, // 10 gigs
 		requestChan: make(chan struct{}, 1),
 	}
+}
+
+func (h *House) UpdateFolders(folders string) bool {
+	var splittedPaths = strings.Split(folders, ",")
+	h.DataFolders = splittedPaths
+	return true
 }
 
 // scheduleCleanup enschedules a housekeeping request if one isn't already
@@ -197,62 +205,64 @@ func (h *House) LoadState() error {
 	return err
 }
 
-const zipMagic = "PK\x03\x04"
+// const zipMagic = "PK\x03\x04"
 
 // RemoveNonZip reads all the beatmaps currently in the house to ensure that
 // they are all zip files. Those which are not get removed.
 func (h *House) RemoveNonZip() {
-	f, err := os.Create("cgbin.db")
-	if err != nil {
-		logError(err)
-		return
-	}
+	// Currently not using feature, so comment it :/
 
-	h.StateMutex.Lock()
-	state2 := make([]*CachedBeatmap, 0, len(h.State))
-	log.Println("[F] Removing non-zip files...", len(h.State), "beatmaps to read")
-	for _, beatmap := range h.State {
-		remove, err := checkBeatmap(beatmap)
-		if err != nil {
-			log.Println("[F] Error:", err)
-			continue
-		}
-		if remove {
-			err = os.Remove(beatmap.fileName())
-			if err != nil {
-				log.Println("[F] Error removing:", err)
-			} else {
-				log.Println("[F] Remove:", beatmap.ID, beatmap.NoVideo)
-			}
-		} else {
-			state2 = append(state2, beatmap)
-		}
-	}
-	err = writeBeatmaps(f, state2)
-	if err != nil {
-		logError(err)
-	}
-	h.State = state2
-	h.StateMutex.Unlock()
-	f.Close()
-	log.Println("[F] CleanUp")
-	h.CleanUp()
+	// f, err := os.Create("cgbin.db")
+	// if err != nil {
+	// 	logError(err)
+	// 	return
+	// }
+
+	// h.StateMutex.Lock()
+	// state2 := make([]*CachedBeatmap, 0, len(h.State))
+	// log.Println("[F] Removing non-zip files...", len(h.State), "beatmaps to read")
+	// for _, beatmap := range h.State {
+	// 	remove, err := checkBeatmap(beatmap)
+	// 	if err != nil {
+	// 		log.Println("[F] Error:", err)
+	// 		continue
+	// 	}
+	// 	if remove {
+	// 		err = os.Remove(beatmap.fileName())
+	// 		if err != nil {
+	// 			log.Println("[F] Error removing:", err)
+	// 		} else {
+	// 			log.Println("[F] Remove:", beatmap.ID, beatmap.NoVideo)
+	// 		}
+	// 	} else {
+	// 		state2 = append(state2, beatmap)
+	// 	}
+	// }
+	// err = writeBeatmaps(f, state2)
+	// if err != nil {
+	// 	logError(err)
+	// }
+	// h.State = state2
+	// h.StateMutex.Unlock()
+	// f.Close()
+	// log.Println("[F] CleanUp")
+	// h.CleanUp()
 }
 
-func checkBeatmap(b *CachedBeatmap) (bool, error) {
-	f, err := b.File()
-	if os.IsNotExist(err) {
-		return true, nil
-	}
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
+// func checkBeatmap(b *CachedBeatmap) (bool, error) {
+// 	f, err := b.File()
+// 	if os.IsNotExist(err) {
+// 		return true, nil
+// 	}
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	defer f.Close()
 
-	header := make([]byte, 4)
-	_, err = f.Read(header)
-	return string(header) != zipMagic, err
-}
+// 	header := make([]byte, 4)
+// 	_, err = f.Read(header)
+// 	return string(header) != zipMagic, err
+// }
 
 var envSentryDSN = os.Getenv("SENTRY_DSN")
 
