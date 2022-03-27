@@ -183,6 +183,7 @@ func (h *House) AcquireBeatmap(c *CachedBeatmap) (*CachedBeatmap, bool) {
 		h.StateMutex.Unlock()
 
 		b.mtx.Lock()
+		b.DataFolders = c.DataFolders
 		// if c is not newer than b, then just return.
 		if !b.LastUpdate.Before(c.LastUpdate) {
 			b.mtx.Unlock()
