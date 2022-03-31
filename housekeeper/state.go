@@ -58,11 +58,11 @@ func (c *CachedBeatmap) CreateFile() (*os.File, error) {
 }
 
 func (c *CachedBeatmap) fileName() string {
-	n := ""
-	if c.NoVideo {
-		n = "n"
-	}
-	return strconv.Itoa(c.ID) + n + ".osz"
+	// n := ""
+	// if c.NoVideo {
+	// 	n = "n"
+	// }
+	return strconv.Itoa(c.ID) + ".osz"
 }
 
 // IsDownloaded checks whether the beatmap has been downloaded.

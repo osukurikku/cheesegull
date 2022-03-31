@@ -48,7 +48,7 @@ func BeatmapChimu(c *api.Context) {
 		return
 	}
 
-	bms, err := models.FetchBeatmaps(c.DB, id)
+	bms, err := models.FetchBeatmapsChimu(c.DB, id)
 	if err != nil {
 		c.Err(err)
 		c.WriteJSON(500, nil)

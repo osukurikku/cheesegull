@@ -48,11 +48,11 @@ func Download(c *api.Context) {
 
 	// use novideo only when we are requested to get a beatmap having a video
 	// and novideo is in the request
-	noVideo := set.HasVideo && existsQueryKey(c, "novideo")
+	// noVideo := set.HasVideo && existsQueryKey(c, "novideo")
 
 	cbm, shouldDownload := c.House.AcquireBeatmap(&housekeeper.CachedBeatmap{
 		ID:          id,
-		NoVideo:     noVideo,
+		NoVideo:     true,
 		LastUpdate:  set.LastUpdate,
 		DataFolders: c.House.DataFolders,
 	})
