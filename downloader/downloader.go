@@ -103,7 +103,7 @@ func (c *Client) getReader(str string) (io.ReadCloser, error) {
 		if we lost something, or our additional crawler not working well, that thing exists...
 	*/
 	hosts := []string{
-		fmt.Sprintf("https://%s/d/?novideo=1", downloadHostName) + "%s",
+		fmt.Sprintf("https://%s/d/", downloadHostName) + "%s?novideo=1",
 		"https://storage.ripple.moe/d/%s?novideo=1",
 		"https://txy1.sayobot.cn/beatmaps/download/full/%s?server=null",
 	}
