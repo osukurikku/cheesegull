@@ -96,13 +96,16 @@ func (c *Client) getReader(str string) (io.ReadCloser, error) {
 	h := (*http.Client)(c)
 
 	var globalerr error
+	/*
+		Just some information about hosts:
+		Hosts are needed for downloading maps directly from N mirrors.
+		We store our maps already in cache folder, so engine will just send that files, BUT
+		if we lost something, or our additional crawler not working well, that thing exists...
+	*/
 	hosts := []string{
-		fmt.Sprintf("https://%s/d/", downloadHostName) + "%s",
-		"https://storage.ripple.moe/d/%s",
+		fmt.Sprintf("https://%s/d/?novideo=1", downloadHostName) + "%s",
+		"https://storage.ripple.moe/d/%s?novideo=1",
 		"https://txy1.sayobot.cn/beatmaps/download/full/%s?server=null",
-		"https://bm6.aeris-dev.pw/d/%s",
-		"https://chimu.moe/d/%s?n",
-		"https://bms.kotworks.cyou/%s.osz" + fmt.Sprintf("?key=%s", bmsOsuKey), // DON'T EVEN TRY TO USE THAT HOST. IT HAS RESTRICTIONS
 	}
 
 	for _, host := range hosts {
