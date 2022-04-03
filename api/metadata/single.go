@@ -62,6 +62,28 @@ func BeatmapChimu(c *api.Context) {
 	c.WriteJSON(200, bms[0])
 }
 
+// BeatmapChimu handles requests to retrieve single beatmaps.
+func BeatmapMd5(c *api.Context) {
+	md5 := c.Param("id")
+	if len(md5) == 0 {
+		c.WriteJSON(404, nil)
+		return
+	}
+
+	bms, err := models.FetchBeatmapsByMd5(c.DB, md5)
+	if err != nil {
+		c.Err(err)
+		c.WriteJSON(500, nil)
+		return
+	}
+	if len(bms) == 0 {
+		c.WriteJSON(404, nil)
+		return
+	}
+
+	c.WriteJSON(200, bms[0])
+}
+
 // Set handles requests to retrieve single beatmap sets.
 func Set(c *api.Context) {
 	id, _ := strconv.Atoi(strings.TrimSuffix(c.Param("id"), ".json"))
@@ -93,28 +115,6 @@ func SetChimu(c *api.Context) {
 	}
 
 	set, err := models.FetchSetChimu(c.DB, id, true)
-	if err != nil {
-		c.Err(err)
-		c.WriteJSON(500, nil)
-		return
-	}
-	if set == nil {
-		c.WriteJSON(404, nil)
-		return
-	}
-
-	c.WriteJSON(200, set)
-}
-
-// SetMD5 handles requests to retrieve single beatmap set by md5.
-func SetMD5(c *api.Context) {
-	md5 := strings.TrimSuffix(c.Param("id"), ".json")
-	if len(md5) == 0 {
-		c.WriteJSON(404, nil)
-		return
-	}
-
-	set, err := models.FetchSetByMD5(c.DB, md5, true)
 	if err != nil {
 		c.Err(err)
 		c.WriteJSON(500, nil)
@@ -291,7 +291,7 @@ func SearchChimu(c *api.Context) {
 
 func init() {
 	api.GET("/api/b/:id", Beatmap)
-	api.GET("/api/md5/:id", SetMD5)
+	api.GET("/api/md5/:id", BeatmapMd5)
 	api.GET("/b/:id", Beatmap)
 	api.GET("/api/s/:id", Set)
 	api.GET("/s/:id", Set)

@@ -132,6 +132,22 @@ func FetchBeatmaps(db *sql.DB, ids ...int) ([]Beatmap, error) {
 }
 
 // FetchBeatmaps retrieves a list of beatmap knowing their IDs.
+func FetchBeatmapsByMd5(db *sql.DB, md5 string) ([]Beatmap, error) {
+	if len(md5) == 0 {
+		return nil, nil
+	}
+
+	q := `SELECT ` + beatmapFields + ` FROM beatmaps WHERE file_md5 = ? `
+
+	rows, err := db.Query(q, md5)
+	if err != nil {
+		return nil, err
+	}
+
+	return readBeatmapsFromRows(rows, 1)
+}
+
+// FetchBeatmaps retrieves a list of beatmap knowing their IDs.
 func FetchBeatmapsChimu(db *sql.DB, ids ...int) ([]BeatmapChimu, error) {
 	if len(ids) == 0 {
 		return nil, nil
