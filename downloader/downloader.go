@@ -76,12 +76,11 @@ func (c *Client) HasVideo(setID int) (bool, error) {
 // Download downloads a beatmap from the osu! website. noVideo specifies whether
 // we should request the beatmap to not have the video.
 func (c *Client) Download(setID int, noVideo bool) (io.ReadCloser, error) {
-	suffix := ""
-	if noVideo {
-		suffix = "n"
-	}
-
-	return c.getReader(strconv.Itoa(setID) + suffix)
+	// suffix := ""
+	// if noVideo {
+	// 	suffix = "n"
+	// }
+	return c.getReader(strconv.Itoa(setID))
 }
 
 // ErrNoRedirect is returned from Download when we were not redirect, thus
@@ -105,7 +104,7 @@ func (c *Client) getReader(str string) (io.ReadCloser, error) {
 	hosts := []string{
 		fmt.Sprintf("https://%s/d/", downloadHostName) + "%s?novideo=1",
 		"https://storage.ripple.moe/d/%s?novideo=1",
-		"https://txy1.sayobot.cn/beatmaps/download/full/%s?server=null",
+		"https://txy1.sayobot.cn/beatmaps/download/full/%sn?server=null",
 	}
 
 	for _, host := range hosts {

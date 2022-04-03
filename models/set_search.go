@@ -298,6 +298,10 @@ func SearchSetsChimu(db, searchDB *sql.DB, opts SearchOptions) ([]SetChimu, erro
 		beatmapConds += fmt.Sprintf(" AND beatmaps.bpm <= %f ", opts.MaxBPM)
 	}
 
+	if beatmapConds != "" {
+		beatmapConds = " AND EXISTS (SELECT 1 FROM beatmaps WHERE beatmaps.parent_set_id = sets.id " + beatmapConds + ") "
+	}
+
 	// Limit user amount for beatmap asking
 	if opts.Amount > 100 {
 		opts.Amount = 100
@@ -366,8 +370,8 @@ func SearchSetsChimu(db, searchDB *sql.DB, opts SearchOptions) ([]SetChimu, erro
 	if havingConds != "" {
 		havingConds = " HAVING " + havingConds
 	}
-	setsQuery := "SELECT " + setFieldsWithRow + ", sets.set_modes & " + sm + " AS valid_set_modes FROM sets INNER JOIN beatmaps ON beatmaps.parent_set_id = sets.id " +
-		whereConds + beatmapConds + " GROUP BY beatmaps.parent_set_id " + havingConds + " ORDER BY last_update DESC " + limit
+	setsQuery := "SELECT " + setFieldsWithRow + ", sets.set_modes & " + sm + " AS valid_set_modes FROM sets " +
+		whereConds + beatmapConds + havingConds + " ORDER BY last_update DESC " + limit
 	rows, err := db.Query(setsQuery)
 
 	if err != nil {
