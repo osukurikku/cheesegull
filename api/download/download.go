@@ -117,14 +117,14 @@ func downloadBeatmap(c *downloader.Client, b *housekeeper.CachedBeatmap, house *
 	fCbm, errF := b.File()
 	if errF == nil {
 		stat, err := fCbm.Stat()
+		if err != nil {
+			goto DOWNLOAD_MAP
+		}
 		defer func() {
 			// We need to wrap this inside a function because this way the arguments
 			// to DownloadCompleted are actually evaluated during the defer call.
 			b.DownloadCompleted(uint64(stat.Size()), house)
 		}()
-		if err != nil {
-			goto DOWNLOAD_MAP
-		}
 
 		// FILE EXISTS!
 		log.Println("[⬇️][👌] Map found in cache, no need to download!", b.String())
