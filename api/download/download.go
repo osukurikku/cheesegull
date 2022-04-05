@@ -116,12 +116,23 @@ func downloadBeatmap(c *downloader.Client, b *housekeeper.CachedBeatmap, house *
 	// so problem is that for some maps, we can put them in cache forcely (like map updating or smth)
 	fCbm, errF := b.File()
 	if errF == nil {
+		stat, err := fCbm.Stat()
+		defer func() {
+			// We need to wrap this inside a function because this way the arguments
+			// to DownloadCompleted are actually evaluated during the defer call.
+			b.DownloadCompleted(uint64(stat.Size()), house)
+		}()
+		if err != nil {
+			goto DOWNLOAD_MAP
+		}
+
 		// FILE EXISTS!
 		log.Println("[⬇️][👌] Map found in cache, no need to download!", b.String())
 		defer fCbm.Close()
 		return nil
 	}
 
+DOWNLOAD_MAP:
 	// Start downloading.
 	r, err := c.Download(b.ID, b.NoVideo)
 	if err != nil {
