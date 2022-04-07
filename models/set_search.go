@@ -425,9 +425,9 @@ func SearchSetsChimu(db, searchDB *sql.DB, opts SearchOptions) ([]SetChimu, erro
 			return nil, err
 		}
 
-		b.OsuFile = fmt.Sprintf("%d.osu", b.ID)
 		b.DownloadPath = fmt.Sprintf("/d/%d", b.ParentSetId)
 		parentSet, ok := setMap[b.ParentSetId]
+		b.OsuFile = fmt.Sprintf("%s - %s (%s) [%s].osu", sets[parentSet].Artist, sets[parentSet].Title, sets[parentSet].Creator, b.DiffName)
 		if !ok {
 			continue
 		}

@@ -47,9 +47,9 @@ type BeatmapChimu struct {
 }
 
 const beatmapFields = `
-id, parent_set_id, diff_name, file_md5, mode, bpm,
-ar, od, cs, hp, total_length, hit_length,
-playcount, passcount, max_combo, difficulty_rating`
+beatmaps.id, beatmaps.parent_set_id, beatmaps.diff_name, beatmaps.file_md5, beatmaps.mode, beatmaps.bpm,
+beatmaps.ar, beatmaps.od, beatmaps.cs, beatmaps.hp, beatmaps.total_length, beatmaps.hit_length,
+beatmaps.playcount, beatmaps.passcount, beatmaps.max_combo, beatmaps.difficulty_rating`
 
 func readBeatmapsFromRows(rows *sql.Rows, capacity int) ([]Beatmap, error) {
 	var err error
@@ -75,17 +75,19 @@ func readBeatmapsFromRowsChimu(rows *sql.Rows, capacity int) ([]BeatmapChimu, er
 	bms_chimu := make([]BeatmapChimu, 0, capacity)
 	for rows.Next() {
 		var bcm BeatmapChimu
+		var artist, title, creator string
+
 		err = rows.Scan(
 			&bcm.ID, &bcm.ParentSetId, &bcm.DiffName, &bcm.FileMD5, &bcm.Mode, &bcm.BPM,
 			&bcm.AR, &bcm.OD, &bcm.CS, &bcm.HP, &bcm.TotalLength, &bcm.HitLength,
-			&bcm.Playcount, &bcm.Passcount, &bcm.MaxCombo, &bcm.DifficultyRating,
+			&bcm.Playcount, &bcm.Passcount, &bcm.MaxCombo, &bcm.DifficultyRating, &artist, &title, &creator,
 		)
 
 		if err != nil {
 			return nil, err
 		}
 
-		bcm.OsuFile = fmt.Sprintf("%d.osu", bcm.ID)
+		bcm.OsuFile = fmt.Sprintf("%s - %s (%s) [%s].osu", artist, title, creator, bcm.DiffName)
 		bcm.DownloadPath = fmt.Sprintf("/d/%d", bcm.ParentSetId)
 		bms_chimu = append(bms_chimu, bcm)
 	}
@@ -153,7 +155,7 @@ func FetchBeatmapsChimu(db *sql.DB, ids ...int) ([]BeatmapChimu, error) {
 		return nil, nil
 	}
 
-	q := `SELECT ` + beatmapFields + ` FROM beatmaps WHERE id IN (` + inClause(len(ids)) + `)`
+	q := `SELECT ` + beatmapFields + `, sets.artist, sets.title, sets.creator FROM beatmaps RIGHT JOIN sets ON sets.id = beatmaps.parent_set_id FROM beatmaps WHERE id IN (` + inClause(len(ids)) + `)`
 
 	rows, err := db.Query(q, sIntToSInterface(ids)...)
 	if err != nil {

@@ -148,7 +148,8 @@ func CreateHandler(db, searchDB *sql.DB, house *housekeeper.House, dlc *download
 				debug.PrintStack()
 			}()
 			h.f(ctx)
-			log.Printf("[R] %-10s %-4s %s\n",
+			log.Printf("[R] %s %-10s %-4s %s\n",
+				r.Header.Get("CF-Connecting-IP"),
 				time.Since(start).String(),
 				r.Method,
 				r.URL.Path,

@@ -100,7 +100,7 @@ func updateSet(c *osuapi.Client, db *sql.DB, set models.Set) error {
 	}
 	if len(bms) == 0 {
 		// set has been deleted from osu!, so we do the same thing
-		return models.DeleteSet(db, set.ID)
+		return nil
 	}
 
 	// create the new set based on the information we can obtain from the
