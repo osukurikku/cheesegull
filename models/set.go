@@ -137,7 +137,7 @@ func FetchSetChimu(db *sql.DB, id int, withChildren bool) (*SetChimu, error) {
 		return &s, nil
 	}
 
-	rows, err := db.Query(`SELECT `+beatmapFields+` FROM beatmaps WHERE parent_set_id = ?`, s.ID)
+	rows, err := db.Query(`SELECT `+beatmapFields+`, sets.artist, sets.title, sets.creator FROM beatmaps RIGHT JOIN sets ON sets.id = beatmaps.parent_set_id WHERE beatmaps.parent_set_id = ?`, s.ID)
 	if err != nil {
 		return nil, err
 	}
