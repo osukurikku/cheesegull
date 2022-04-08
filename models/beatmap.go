@@ -155,7 +155,7 @@ func FetchBeatmapsChimu(db *sql.DB, ids ...int) ([]BeatmapChimu, error) {
 		return nil, nil
 	}
 
-	q := `SELECT ` + beatmapFields + `, sets.artist, sets.title, sets.creator FROM beatmaps RIGHT JOIN sets ON sets.id = beatmaps.parent_set_id WHERE sets.id IN (` + inClause(len(ids)) + `)`
+	q := `SELECT ` + beatmapFields + `, sets.artist, sets.title, sets.creator FROM beatmaps RIGHT JOIN sets ON sets.id = beatmaps.parent_set_id WHERE beatmaps.id IN (` + inClause(len(ids)) + `)`
 
 	rows, err := db.Query(q, sIntToSInterface(ids)...)
 	if err != nil {
